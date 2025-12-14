@@ -208,6 +208,34 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.2"
+  http:
+    dependency: "direct main"
+    description:
+      name: http
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.13.6"
+  html:
+    dependency: "direct main"
+    description:
+      name: html
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.15.4"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.2"
+  youtube_explode_dart:
+    dependency: "direct main"
+    description:
+      name: youtube_explode_dart
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
 sdks:
   dart: ">=3.10.3 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"
