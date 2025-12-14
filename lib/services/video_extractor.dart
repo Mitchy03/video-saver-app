@@ -88,7 +88,9 @@ class TwitterVideoExtractor implements BaseExtractor {
 class YouTubeVideoExtractor implements BaseExtractor {
   // ignore: unused_field
   final YoutubeExplode _client = YoutubeExplode();
-  final _regex = RegExp(r'(?:youtube\.com/watch\?v=|youtu.be/)([A-Za-z0-9_-]{6,})');
+  final _regex = RegExp(
+    r'(?:youtube\.com/(?:watch\?v=|shorts/)|youtu.be/)([A-Za-z0-9_-]{6,})',
+  );
 
   @override
   Future<VideoExtractionResult> extract(
@@ -108,7 +110,8 @@ class YouTubeVideoExtractor implements BaseExtractor {
     // Placeholder for real youtube_explode metadata lookup.
     final quality = isPremium ? '1080p' : '360p';
     return VideoExtractionResult(
-      platform: VideoPlatform.youtube,
+      platform:
+          url.contains('shorts/') ? VideoPlatform.youtubeShorts : VideoPlatform.youtube,
       title: 'Sample YouTube video',
       thumbnailUrl: 'https://img.example.com/youtube_thumb.jpg',
       lowQualityUrl: 'https://rr1---sn.mock.googlevideo.com/videoplayback_360.mp4',
@@ -116,38 +119,6 @@ class YouTubeVideoExtractor implements BaseExtractor {
       qualityLabels: const QualityLabels(
         lowQuality: '360p',
         highQuality: '1080p+',
-      ),
-    );
-  }
-}
-
-class YouTubeShortsExtractor implements BaseExtractor {
-  final _regex = RegExp(r'youtube.com/shorts/([A-Za-z0-9_-]{6,})');
-
-  @override
-  Future<VideoExtractionResult> extract(
-    String url, {
-    required bool isPremium,
-    required bool ownContent,
-  }) async {
-    if (!ownContent) {
-      throw OwnershipException(
-        'Graph API制限: 自分の投稿のみダウンロード可能です。',
-      );
-    }
-    if (!_regex.hasMatch(url)) {
-      throw FormatException('Invalid YouTube Shorts URL');
-    }
-
-    return VideoExtractionResult(
-      platform: VideoPlatform.youtubeShorts,
-      title: 'Sample Shorts clip',
-      thumbnailUrl: 'https://img.example.com/youtube_shorts_thumb.jpg',
-      lowQualityUrl: 'https://shorts.mock/480p.mp4',
-      highQualityUrl: 'https://shorts.mock/720p.mp4',
-      qualityLabels: const QualityLabels(
-        lowQuality: '480p',
-        highQuality: '720p',
       ),
     );
   }
@@ -189,12 +160,10 @@ class VideoExtractor {
   VideoExtractor()
       : _twitter = TwitterVideoExtractor(),
         _youtube = YouTubeVideoExtractor(),
-        _shorts = YouTubeShortsExtractor(),
         _instagram = InstagramVideoExtractor();
 
   final TwitterVideoExtractor _twitter;
   final YouTubeVideoExtractor _youtube;
-  final YouTubeShortsExtractor _shorts;
   final InstagramVideoExtractor _instagram;
 
   VideoPlatform detectPlatform(String url) {
@@ -225,7 +194,7 @@ class VideoExtractor {
       case VideoPlatform.youtube:
         return _youtube.extract(url, isPremium: isPremium, ownContent: ownContent);
       case VideoPlatform.youtubeShorts:
-        return _shorts.extract(url, isPremium: isPremium, ownContent: ownContent);
+        return _youtube.extract(url, isPremium: isPremium, ownContent: ownContent);
       case VideoPlatform.instagram:
         return _instagram.extract(url, isPremium: isPremium, ownContent: ownContent);
       case VideoPlatform.unknown:
