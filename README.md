@@ -16,7 +16,7 @@
 
 ## 開発メモ
 - 依存: google_mobile_ads, purchases_flutter, youtube_explode_dart, twitter_api_v2, shared_preferences ほか
-- pubspec固定: Flutter SDKに合わせた`intl 0.20.2`採用のため直接依存を外し、`http 0.13.6`と`youtube_explode_dart 2.3.0`を固定して`twitter_api_v2`との互換性を確保しています。
+- pubspec固定: Flutter SDKに合わせた`intl 0.20.2`を採用し、`http 0.13.6`のまま`twitter_api_v2`との互換性を維持するため`youtube_explode_dart 1.12.4`を固定しています。
 - テスト: `flutter test`（本環境ではFlutter SDK未導入のため未実行）
 - スクリーンショット/アセットは `assets/` 配下に配置してください（サンプル .gitkeep のみ同梱）。
 
