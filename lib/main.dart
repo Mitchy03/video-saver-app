@@ -1,58 +1,141 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'services/download_manager.dart';
+import 'services/video_extractor.dart';
 
-import 'l10n/app_localizations.dart';
-import 'screens/ad_screen.dart';
-import 'screens/download_progress_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/premium_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/splash_screen.dart';
-import 'state/app_state.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final appState = AppState();
-  await appState.bootstrap();
-  runApp(MyApp(appState: appState));
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.appState});
-
-  final AppState appState;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: appState,
-      child: MaterialApp(
-        title: '4SNS Video Saver',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+    return MaterialApp(
+      title: 'Video Downloader Test',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const TestScreen(),
+    );
+  }
+}
+
+class TestScreen extends StatefulWidget {
+  const TestScreen({super.key});
+
+  @override
+  State<TestScreen> createState() => _TestScreenState();
+}
+
+class _TestScreenState extends State<TestScreen> {
+  final _urlController = TextEditingController();
+  final _downloadManager = DownloadManager();
+  final _videoExtractor = VideoExtractor();
+  
+  String _status = '待機中';
+  bool _isDownloading = false;
+  double _progress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _downloadManager.progressStream.listen((progress) {
+      setState(() {
+        _progress = progress.progress;
+        _status = progress.message;
+      });
+    });
+  }
+
+  Future<void> _startDownload(DownloadQuality quality) async {
+    final url = _urlController.text.trim();
+    
+    if (url.isEmpty) {
+      setState(() => _status = 'URLを入力してください');
+      return;
+    }
+
+    if (!_videoExtractor.isValidUrl(url)) {
+      setState(() => _status = '対応していないURLです');
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _status = '準備中...';
+    });
+
+    try {
+      final filePath = await _downloadManager.startDownload(
+        url: url,
+        quality: quality,
+      );
+      
+      setState(() {
+        _status = '完了: $filePath';
+        _isDownloading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _status = 'エラー: $e';
+        _isDownloading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('動画DLテスト')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _urlController,
+              decoration: const InputDecoration(
+                labelText: '動画URL',
+                hintText: 'https://www.youtube.com/watch?v=...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isDownloading ? null : () => _startDownload(DownloadQuality.low),
+                    child: const Text('低画質DL（無料）'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isDownloading ? null : () => _startDownload(DownloadQuality.high),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                    child: const Text('高画質DL（サブスク）'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            if (_isDownloading)
+              LinearProgressIndicator(value: _progress),
+            const SizedBox(height: 16),
+            Text(
+              _status,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ],
         ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-        ),
-        localizationsDelegates: AppLocalizations.globalDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        initialRoute: SplashScreen.routeName,
-        routes: {
-          SplashScreen.routeName: (_) => const SplashScreen(),
-          HomeScreen.routeName: (_) => const HomeScreen(),
-          PremiumScreen.routeName: (_) => const PremiumScreen(),
-          SettingsScreen.routeName: (_) => const SettingsScreen(),
-          AdScreen.routeName: (_) => const AdScreen(),
-          DownloadProgressScreen.routeName: (_) => const DownloadProgressScreen(),
-        },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    _downloadManager.dispose();
+    super.dispose();
   }
 }
