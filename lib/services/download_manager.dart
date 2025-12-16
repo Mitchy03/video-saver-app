@@ -54,7 +54,9 @@ class DownloadManager {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final outputPath = '${downloadsDir.path}\\video_$timestamp.mp4';
 
-    final qualityFlag = quality == DownloadQuality.high ? 'best' : 'worst';
+    final qualityFlag = quality == DownloadQuality.high
+        ? 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+        : 'worst[ext=mp4]/worst';
 
     _progressController.add(DownloadProgress(
       progress: 0.0,
