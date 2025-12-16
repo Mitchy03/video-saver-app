@@ -18,7 +18,9 @@ enum DownloadQuality {
 
 class DownloadManager {
   static const String ytdlpAsset = 'assets/yt-dlp.exe';
+  static const String ffmpegAsset = 'assets/ffmpeg.exe';
   String? _ytdlpPath;
+  String? _ffmpegPath;
   final _progressController = StreamController<DownloadProgress>.broadcast();
 
   Stream<DownloadProgress> get progressStream => _progressController.stream;
@@ -38,6 +40,14 @@ class DownloadManager {
         throw Exception('yt-dlp.exe の読み込みに失敗: $e');
       }
     }
+
+    // ffmpeg展開
+    _ffmpegPath = '${tempDir.path}\\ffmpeg.exe';
+    final ffmpegFile = File(_ffmpegPath!);
+    if (!await ffmpegFile.exists()) {
+      final ffmpegData = await rootBundle.load(ffmpegAsset);
+      await ffmpegFile.writeAsBytes(ffmpegData.buffer.asUint8List());
+    }
   }
 
   Future<String> startDownload({
@@ -55,8 +65,8 @@ class DownloadManager {
     final outputPath = '${downloadsDir.path}\\video_$timestamp.mp4';
 
     final qualityFlag = quality == DownloadQuality.high
-        ? '18' // 360p MP4（結合済み）
-        : '18'; // 同じ（無料版も同じ画質）
+        ? 'bestvideo+bestaudio/best' // 最高画質（ffmpeg使用）
+        : '18'; // 360p
 
     _progressController.add(DownloadProgress(
       progress: 0.0,
@@ -67,7 +77,7 @@ class DownloadManager {
       final shell = Shell();
 
       await shell.run('''
-        "$_ytdlpPath" -f "$qualityFlag" -o "$outputPath" "$url"
+        "$_ytdlpPath" --ffmpeg-location "$_ffmpegPath" -f "$qualityFlag" -o "$outputPath" "$url"
       ''');
 
       _progressController.add(DownloadProgress(
