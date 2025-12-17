@@ -16,6 +16,9 @@ dependencies:
   purchases_flutter: ^6.27.1
   shared_preferences: ^2.3.2
   http: ^0.13.6
+  flutter_animate: ^4.5.0
+  confetti: ^0.7.0
+  shimmer: ^3.0.0
   html: ^0.15.4
   youtube_explode_dart: 1.12.4
   twitter_api_v2: ^4.1.3
