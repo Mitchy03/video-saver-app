@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/download_manager.dart';
 import 'services/video_extractor.dart';
+import 'screens/download_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Video Downloader Test',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const TestScreen(),
+      home: const ModernDownloadScreen(),
     );
   }
 }
