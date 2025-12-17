@@ -279,27 +279,134 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
           // 進捗・ステータス表示
           if (_isDownloading) ...[
             Container(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF833AB4).withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  LinearProgressIndicator(
-                    value: _progress,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation(Color(0xFF833AB4)),
-                    minHeight: 6,
+                  Stack(
+                    children: [
+                      Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      Container(
+                        height: 8,
+                        width: MediaQuery.of(context).size.width * _progress * 0.85,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF833AB4),
+                              Color(0xFFFD1D1D),
+                              Color(0xFFFCAF45),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0xFFFD1D1D).withOpacity(0.5),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Downloading',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF833AB4),
+                        ),
+                      ),
+                      Text(
+                        '${(_progress * 100).toInt()}%',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFD1D1D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else if (_status.isNotEmpty && _status.contains('完了')) ...[
+            Container(
+              padding: EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF833AB4),
+                          Color(0xFFFD1D1D),
+                          Color(0xFFFCAF45),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFFFD1D1D).withOpacity(0.5),
+                          blurRadius: 15,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  SizedBox(height: 16),
                   Text(
-                    _status,
+                    'Complete',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF833AB4),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Video saved successfully',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: Colors.grey[600],
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -308,16 +415,24 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.withOpacity(0.3), width: 2),
               ),
-              child: Text(
-                _status,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _status.contains('完了') ? Colors.green : Colors.red,
-                ),
-                textAlign: TextAlign.center,
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 24),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _status,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.red[700],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
