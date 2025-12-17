@@ -66,7 +66,7 @@ class DownloadManager {
 
     final qualityFlag = quality == DownloadQuality.high
         ? 'bestvideo+bestaudio/best' // 元動画と同じ最高画質
-        : '135+140/18'; // 480p（video 480p + audio 128kbps）、なければ360p
+        : 'worst[height<=480]/worst'; // 480p以下（全プラットフォーム対応）
 
     _progressController.add(DownloadProgress(
       progress: 0.0,
