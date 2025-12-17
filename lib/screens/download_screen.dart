@@ -19,7 +19,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   final _videoExtractor = VideoExtractor();
   final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
   Timer? _completeTimer;
-  
+  bool _showComplete = false;
+
   String _status = '';
   bool _isDownloading = false;
   double _progress = 0.0;
@@ -60,18 +61,18 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
         url: url,
         quality: quality,
       );
-      
+
       _confettiController.play();
 
       setState(() {
-        _status = '完了';
+        _showComplete = true;
         _isDownloading = false;
       });
 
-      // 3秒後に自動で消す
       _completeTimer = Timer(Duration(seconds: 3), () {
         if (mounted) {
           setState(() {
+            _showComplete = false;
             _status = '';
           });
         }
@@ -115,6 +116,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               child: _selectedIndex == 0 ? _buildHomeScreen() : _buildHistoryScreen(),
             ),
           ),
+          
+          // 紙吹雪
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -132,6 +135,73 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               ],
             ),
           ),
+          
+          // Apple Pay風Complete表示
+          if (_showComplete)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 30,
+                        spreadRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: CircularProgressIndicator(
+                              value: 1.0,
+                              strokeWidth: 6,
+                              backgroundColor: Colors.grey[200],
+                              valueColor: AlwaysStoppedAnimation(Colors.green),
+                            ),
+                          ),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.green,
+                            ),
+                            child: Icon(
+                              Icons.check_rounded,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      )
+                          .animate()
+                          .scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                      SizedBox(height: 20),
+                      Text(
+                        'Complete',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 300.ms).scale(begin: Offset(0.8, 0.8)),
+              ),
+            ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -369,60 +439,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
           
           SizedBox(height: 32),
           
-          if (!_isDownloading && _status.isNotEmpty && _status == '完了') ...[
-            Container(
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF833AB4),
-                          Color(0xFFFD1D1D),
-                          Color(0xFFFCAF45),
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0xFFFD1D1D).withOpacity(0.5),
-                          blurRadius: 15,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 32,
-                ),
-              ).animate().scale(begin: Offset(0, 0), duration: 600.ms, curve: Curves.elasticOut),
-              SizedBox(height: 16),
-              Text(
-                'Complete',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF833AB4),
-                ),
-              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
-                ],
-              ),
-            ).animate().fadeIn().scale(begin: Offset(0.8, 0.8)),
-          ] else if (!_isDownloading && _status.isNotEmpty && _status != '完了') ...[
+          if (!_isDownloading && _status.isNotEmpty) ...[
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
