@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:confetti/confetti.dart';
 import '../services/download_manager.dart';
 import '../services/video_extractor.dart';
 
@@ -13,6 +15,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   final _urlController = TextEditingController();
   final _downloadManager = DownloadManager();
   final _videoExtractor = VideoExtractor();
+  final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
   
   String _status = '';
   bool _isDownloading = false;
@@ -46,6 +49,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     setState(() {
       _isDownloading = true;
       _status = '準備中...';
+      _progress = 0.0;
     });
 
     try {
@@ -54,8 +58,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
         quality: quality,
       );
       
+      _confettiController.play();
+      
       setState(() {
-        _status = 'ダウンロード完了！\n$filePath';
+        _status = '完了';
         _isDownloading = false;
       });
     } catch (e) {
@@ -79,21 +85,42 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF833AB4),  // 紫
-              Color(0xFFFD1D1D),  // ピンク
-              Color(0xFFFCAF45),  // オレンジ
-            ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF833AB4),
+                  Color(0xFFFD1D1D),
+                  Color(0xFFFCAF45),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: _selectedIndex == 0 ? _buildHomeScreen() : _buildHistoryScreen(),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: _selectedIndex == 0 ? _buildHomeScreen() : _buildHistoryScreen(),
-        ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              particleDrag: 0.05,
+              emissionFrequency: 0.05,
+              numberOfParticles: 50,
+              gravity: 0.2,
+              colors: [
+                Color(0xFF833AB4),
+                Color(0xFFFD1D1D),
+                Color(0xFFFCAF45),
+                Colors.white,
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -132,7 +159,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
           size: 28,
         ),
       ),
-    );
+    ).animate(target: isSelected ? 1 : 0).scale();
   }
 
   Widget _buildHomeScreen() {
@@ -143,7 +170,6 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
         children: [
           SizedBox(height: 20),
           
-          // タイトル
           Row(
             children: [
               Expanded(
@@ -154,9 +180,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
-                ),
+                ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
               ),
-              Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
+              Icon(Icons.notifications_outlined, color: Colors.white, size: 28)
+                  .animate().fadeIn(delay: 200.ms).scale(begin: Offset(0.5, 0.5)),
               SizedBox(width: 16),
               Container(
                 padding: EdgeInsets.all(8),
@@ -165,24 +192,22 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.workspace_premium, color: Colors.white, size: 24),
-              ),
+              ).animate().fadeIn(delay: 400.ms).scale(begin: Offset(0.5, 0.5)),
             ],
           ),
           
           SizedBox(height: 40),
           
-          // サブタイトル
           Text(
             'Youtube X Instagram Link',
             style: TextStyle(
               fontSize: 16,
               color: Colors.white.withOpacity(0.7),
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms),
           
           SizedBox(height: 16),
           
-          // URL入力欄
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -207,9 +232,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    // Paste機能（後で実装）
-                  },
+                  onPressed: () {},
                   child: Text(
                     'Paste',
                     style: TextStyle(
@@ -220,137 +243,121 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                 ),
               ],
             ),
-          ),
+          ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
           
           SizedBox(height: 24),
           
-          // Downloadボタン
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isDownloading ? null : () => _startDownload(DownloadQuality.low),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
+          Stack(
+            children: [
+              Column(
+                children: [
+                  _buildDownloadButton(
+                    label: 'Download',
+                    onTap: () => _startDownload(DownloadQuality.low),
+                    delay: 600,
+                  ),
+                  SizedBox(height: 16),
+                  _buildDownloadButton(
+                    label: 'HD Download',
+                    onTap: () => _startDownload(DownloadQuality.high),
+                    delay: 800,
+                  ),
+                ],
               ),
-              child: Text(
-                'Download',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF833AB4),
+              if (_isDownloading)
+                Positioned.fill(
+                  child: Container(
+                    margin: EdgeInsets.only(top: 0),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0xFF833AB4).withOpacity(0.3),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Stack(
+                                children: [
+                                  Container(
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  AnimatedContainer(
+                                    duration: Duration(milliseconds: 300),
+                                    height: 8,
+                                    width: MediaQuery.of(context).size.width * _progress * 0.85,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFF833AB4),
+                                          Color(0xFFFD1D1D),
+                                          Color(0xFFFCAF45),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Color(0xFFFD1D1D).withOpacity(0.5),
+                                          blurRadius: 10,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                  ).animate(onPlay: (controller) => controller.repeat())
+                                      .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.3)),
+                                ],
+                              ),
+                              SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Downloading',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF833AB4),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${(_progress * 100).toInt()}%',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFFD1D1D),
+                                    ),
+                                  ).animate(onPlay: (controller) => controller.repeat())
+                                      .fadeIn(duration: 500.ms)
+                                      .then()
+                                      .fadeOut(duration: 500.ms),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ).animate().fadeIn().scale(begin: Offset(0.9, 0.9)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          
-          SizedBox(height: 16),
-          
-          // HD Downloadボタン
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isDownloading ? null : () => _startDownload(DownloadQuality.high),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'HD Download',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF833AB4),
-                ),
-              ),
-            ),
+            ],
           ),
           
           SizedBox(height: 32),
           
-          // 進捗・ステータス表示
-          if (_isDownloading) ...[
-            Container(
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF833AB4).withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      Container(
-                        height: 8,
-                        width: MediaQuery.of(context).size.width * _progress * 0.85,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF833AB4),
-                              Color(0xFFFD1D1D),
-                              Color(0xFFFCAF45),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFD1D1D).withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Downloading',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF833AB4),
-                        ),
-                      ),
-                      Text(
-                        '${(_progress * 100).toInt()}%',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFD1D1D),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ] else if (_status.isNotEmpty && _status.contains('完了')) ...[
+          if (!_isDownloading && _status.isNotEmpty && _status == '完了') ...[
             Container(
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -390,7 +397,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                       color: Colors.white,
                       size: 32,
                     ),
-                  ),
+                  ).animate().scale(begin: Offset(0, 0), duration: 600.ms, curve: Curves.elasticOut),
                   SizedBox(height: 16),
                   Text(
                     'Complete',
@@ -399,7 +406,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF833AB4),
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
                   SizedBox(height: 8),
                   Text(
                     'Video saved successfully',
@@ -407,11 +414,11 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 500.ms),
                 ],
               ),
-            ),
-          ] else if (_status.isNotEmpty) ...[
+            ).animate().fadeIn().scale(begin: Offset(0.8, 0.8)),
+          ] else if (!_isDownloading && _status.isNotEmpty && _status != '完了') ...[
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -434,11 +441,54 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                   ),
                 ],
               ),
-            ),
+            ).animate().shake().fadeIn(),
           ],
         ],
       ),
     );
+  }
+
+  Widget _buildDownloadButton({
+    required String label,
+    required VoidCallback onTap,
+    required int delay,
+  }) {
+    return GestureDetector(
+      onTap: _isDownloading ? null : onTap,
+      child: AnimatedOpacity(
+        opacity: _isDownloading ? 0.3 : 1.0,
+        duration: Duration(milliseconds: 300),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF833AB4),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(delay: delay.ms, duration: 600.ms)
+        .slideY(begin: 0.2, end: 0)
+        .then(delay: 1000.ms)
+        .shimmer(duration: 2000.ms, color: Colors.white.withOpacity(0.5));
   }
 
   Widget _buildHistoryScreen() {
@@ -446,7 +496,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history_rounded, size: 80, color: Colors.white.withOpacity(0.5)),
+          Icon(Icons.history_rounded, size: 80, color: Colors.white.withOpacity(0.5))
+              .animate().scale(duration: 800.ms, curve: Curves.elasticOut),
           SizedBox(height: 16),
           Text(
             'ダウンロード履歴',
@@ -454,7 +505,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               fontSize: 20,
               color: Colors.white,
             ),
-          ),
+          ).animate().fadeIn(delay: 200.ms),
           SizedBox(height: 8),
           Text(
             '履歴機能は今後実装予定',
@@ -462,7 +513,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               fontSize: 14,
               color: Colors.white.withOpacity(0.7),
             ),
-          ),
+          ).animate().fadeIn(delay: 400.ms),
         ],
       ),
     );
@@ -472,6 +523,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   void dispose() {
     _urlController.dispose();
     _downloadManager.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 }
