@@ -65,8 +65,8 @@ class DownloadManager {
     final outputPath = '${downloadsDir.path}\\video_$timestamp.mp4';
 
     final qualityFlag = quality == DownloadQuality.high
-        ? 'bestvideo+bestaudio/best' // 最高画質（ffmpeg使用）
-        : '18'; // 360p
+        ? 'bestvideo+bestaudio/best' // 元動画と同じ最高画質
+        : '135+140/18'; // 480p（video 480p + audio 128kbps）、なければ360p
 
     _progressController.add(DownloadProgress(
       progress: 0.0,
