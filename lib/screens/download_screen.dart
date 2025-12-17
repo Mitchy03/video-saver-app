@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
@@ -16,6 +18,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   final _downloadManager = DownloadManager();
   final _videoExtractor = VideoExtractor();
   final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  Timer? _completeTimer;
   
   String _status = '';
   bool _isDownloading = false;
@@ -59,10 +62,19 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
       );
       
       _confettiController.play();
-      
+
       setState(() {
         _status = '完了';
         _isDownloading = false;
+      });
+
+      // 3秒後に自動で消す
+      _completeTimer = Timer(Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _status = '';
+          });
+        }
       });
     } catch (e) {
       String message;
@@ -396,25 +408,17 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                       Icons.check_rounded,
                       color: Colors.white,
                       size: 32,
-                    ),
-                  ).animate().scale(begin: Offset(0, 0), duration: 600.ms, curve: Curves.elasticOut),
-                  SizedBox(height: 16),
-                  Text(
-                    'Complete',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF833AB4),
-                    ),
-                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
-                  SizedBox(height: 8),
-                  Text(
-                    'Video saved successfully',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ).animate().fadeIn(delay: 500.ms),
+                ),
+              ).animate().scale(begin: Offset(0, 0), duration: 600.ms, curve: Curves.elasticOut),
+              SizedBox(height: 16),
+              Text(
+                'Complete',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF833AB4),
+                ),
+              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
                 ],
               ),
             ).animate().fadeIn().scale(begin: Offset(0.8, 0.8)),
@@ -524,6 +528,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     _urlController.dispose();
     _downloadManager.dispose();
     _confettiController.dispose();
+    _completeTimer?.cancel();
     super.dispose();
   }
 }
