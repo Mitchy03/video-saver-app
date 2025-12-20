@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -119,6 +120,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // 背景
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -135,7 +137,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               child: _selectedIndex == 0 ? _buildHomeScreen() : _buildHistoryScreen(),
             ),
           ),
-          
+
           // 紙吹雪
           Align(
             alignment: Alignment.topCenter,
@@ -154,77 +156,82 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               ],
             ),
           ),
-          
-          // Apple Pay風Complete表示
+
+          // ブラー背景（ダウンロード中・Complete・エラー時）
+          if (_isDownloading || _showComplete || _showError)
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                color: Colors.transparent,
+              ),
+            ),
+
+          // Complete ポップアップ
           AnimatedOpacity(
             opacity: _showComplete ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
             child: AnimatedScale(
               scale: _showComplete ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 300),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeInOut,
               child: _showComplete
-                  ? Container(
-                      color: Colors.black.withOpacity(0.5),
-                      child: Center(
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 30,
-                                spreadRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 80,
-                                    height: 80,
-                                    child: CircularProgressIndicator(
-                                      value: 1.0,
-                                      strokeWidth: 6,
-                                      backgroundColor: Colors.grey[200],
-                                      valueColor: AlwaysStoppedAnimation(Colors.green),
-                                    ),
+                  ? Center(
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 80,
+                                  height: 80,
+                                  child: CircularProgressIndicator(
+                                    value: 1.0,
+                                    strokeWidth: 6,
+                                    backgroundColor: Colors.grey[200],
+                                    valueColor: AlwaysStoppedAnimation(Colors.green),
                                   ),
-                                  Container(
-                                    width: 60,
-                                    height: 60,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.green,
-                                    ),
-                                    child: Icon(
-                                      Icons.check_rounded,
-                                      color: Colors.white,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ],
-                              )
-                                  .animate()
-                                  .scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
-                              SizedBox(height: 20),
-                              Text(
-                                'Complete',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
                                 ),
-                              ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
-                            ],
-                          ),
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.green,
+                                  ),
+                                  child: Icon(
+                                    Icons.check_rounded,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                            SizedBox(height: 20),
+                            Text(
+                              'Complete',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                          ],
                         ),
                       ),
                     )
@@ -232,77 +239,76 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
+          // エラーポップアップ
           AnimatedOpacity(
             opacity: _showError ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
             child: AnimatedScale(
               scale: _showError ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 300),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeInOut,
               child: _showError
-                  ? Container(
-                      color: Colors.black.withOpacity(0.5),
-                      child: Center(
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 30,
-                                spreadRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 80,
-                                    height: 80,
-                                    child: CircularProgressIndicator(
-                                      value: 1.0,
-                                      strokeWidth: 6,
-                                      backgroundColor: Colors.grey[200],
-                                      valueColor: AlwaysStoppedAnimation(Colors.red),
-                                    ),
+                  ? Center(
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 80,
+                                  height: 80,
+                                  child: CircularProgressIndicator(
+                                    value: 1.0,
+                                    strokeWidth: 6,
+                                    backgroundColor: Colors.grey[200],
+                                    valueColor: AlwaysStoppedAnimation(Colors.red),
                                   ),
-                                  Container(
-                                    width: 60,
-                                    height: 60,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.red,
-                                    ),
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      color: Colors.white,
-                                      size: 40,
-                                    ),
+                                ),
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.red,
                                   ),
-                                ],
-                              ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
-                              SizedBox(height: 20),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  _errorMessage,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.white,
+                                    size: 40,
                                   ),
-                                  textAlign: TextAlign.center,
-                                ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
-                              ),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                            SizedBox(height: 20),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                _errorMessage,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                            ),
+                          ],
                         ),
                       ),
                     )
