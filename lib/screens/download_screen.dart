@@ -138,23 +138,107 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
-          // ブラー背景（ダウンロード中・Complete・エラー時のみ）
-          if (_isDownloading || _showComplete || _showError)
-            IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: (_isDownloading || _showComplete || _showError) ? 1.0 : 0.0,
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    color: Colors.transparent,
-                  ),
+          // ブラー背景
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: (_isDownloading || _showComplete || _showError) ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.transparent,
                 ),
               ),
             ),
+          ),
 
-          // 紙吹雪（ブラーの上に配置）
+          // DL進捗表示（ブラーの上）
+          if (_isDownloading)
+            Positioned(
+              top: 350,
+              left: 24,
+              right: 24,
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF833AB4).withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        AnimatedContainer(
+                          duration: Duration(milliseconds: 300),
+                          height: 8,
+                          width: MediaQuery.of(context).size.width * _progress * 0.85,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF833AB4),
+                                Color(0xFFFD1D1D),
+                                Color(0xFFFCAF45),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0xFFFD1D1D).withOpacity(0.5),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ).animate(onPlay: (controller) => controller.repeat())
+                            .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.3)),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Downloading',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF833AB4),
+                          ),
+                        ),
+                        Text(
+                          '${(_progress * 100).toInt()}%',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFD1D1D),
+                          ),
+                        ).animate(onPlay: (controller) => controller.repeat())
+                            .fadeIn(duration: 500.ms)
+                            .then()
+                            .fadeOut(duration: 500.ms),
+                      ],
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn().scale(begin: Offset(0.9, 0.9)),
+            ),
+
+          // 紙吹雪
           IgnorePointer(
             child: Align(
               alignment: Alignment.topCenter,
@@ -175,15 +259,16 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
-          // Complete ポップアップ
-          if (_showComplete)
-            AnimatedOpacity(
+          // Complete ポップアップ（if文なし）
+          IgnorePointer(
+            ignoring: !_showComplete,
+            child: AnimatedOpacity(
               opacity: _showComplete ? 1.0 : 0.0,
-              duration: Duration(milliseconds: 500),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeInOut,
               child: AnimatedScale(
                 scale: _showComplete ? 1.0 : 0.7,
-                duration: Duration(milliseconds: 500),
+                duration: Duration(milliseconds: 400),
                 curve: Curves.easeInOut,
                 child: Center(
                   child: Container(
@@ -230,7 +315,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                               ),
                             ),
                           ],
-                        ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                        ),
                         SizedBox(height: 20),
                         Text(
                           'Complete',
@@ -239,23 +324,25 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
-                        ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
             ),
+          ),
 
-          // エラーポップアップ
-          if (_showError)
-            AnimatedOpacity(
+          // エラーポップアップ（if文なし）
+          IgnorePointer(
+            ignoring: !_showError,
+            child: AnimatedOpacity(
               opacity: _showError ? 1.0 : 0.0,
-              duration: Duration(milliseconds: 500),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeInOut,
               child: AnimatedScale(
                 scale: _showError ? 1.0 : 0.7,
-                duration: Duration(milliseconds: 500),
+                duration: Duration(milliseconds: 400),
                 curve: Curves.easeInOut,
                 child: Center(
                   child: Container(
@@ -302,7 +389,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                               ),
                             ),
                           ],
-                        ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                        ),
                         SizedBox(height: 20),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -314,7 +401,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                               color: Colors.black87,
                             ),
                             textAlign: TextAlign.center,
-                          ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                          ),
                         ),
                       ],
                     ),
@@ -322,6 +409,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                 ),
               ),
             ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -449,111 +537,19 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
           
           SizedBox(height: 24),
           
-          Stack(
+          Column(
             children: [
-              Column(
-                children: [
-                  _buildDownloadButton(
-                    label: 'Download',
-                    onTap: () => _startDownload(DownloadQuality.low),
-                    delay: 600,
-                  ),
-                  SizedBox(height: 16),
-                  _buildDownloadButton(
-                    label: 'HD Download',
-                    onTap: () => _startDownload(DownloadQuality.high),
-                    delay: 800,
-                  ),
-                ],
+              _buildDownloadButton(
+                label: 'Download',
+                onTap: () => _startDownload(DownloadQuality.low),
+                delay: 600,
               ),
-              if (_isDownloading)
-                Positioned.fill(
-                  child: Container(
-                    margin: EdgeInsets.only(top: 0),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.95),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFF833AB4).withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Stack(
-                                children: [
-                                  Container(
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  AnimatedContainer(
-                                    duration: Duration(milliseconds: 300),
-                                    height: 8,
-                                    width: MediaQuery.of(context).size.width * _progress * 0.85,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFF833AB4),
-                                          Color(0xFFFD1D1D),
-                                          Color(0xFFFCAF45),
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Color(0xFFFD1D1D).withOpacity(0.5),
-                                          blurRadius: 10,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                    ),
-                                  ).animate(onPlay: (controller) => controller.repeat())
-                                      .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.3)),
-                                ],
-                              ),
-                              SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Downloading',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF833AB4),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${(_progress * 100).toInt()}%',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFFFD1D1D),
-                                    ),
-                                  ).animate(onPlay: (controller) => controller.repeat())
-                                      .fadeIn(duration: 500.ms)
-                                      .then()
-                                      .fadeOut(duration: 500.ms),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ).animate().fadeIn().scale(begin: Offset(0.9, 0.9)),
-                      ],
-                    ),
-                  ),
-                ),
+              SizedBox(height: 16),
+              _buildDownloadButton(
+                label: 'HD Download',
+                onTap: () => _startDownload(DownloadQuality.high),
+                delay: 800,
+              ),
             ],
           ),
 
