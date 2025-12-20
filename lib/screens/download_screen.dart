@@ -20,6 +20,9 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
   final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
   Timer? _completeTimer;
   bool _showComplete = false;
+  bool _showError = false;
+  String _errorMessage = '';
+  Timer? _errorTimer;
 
   String _status = '';
   bool _isDownloading = false;
@@ -39,14 +42,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
 
   Future<void> _startDownload(DownloadQuality quality) async {
     final url = _urlController.text.trim();
-    
+
     if (url.isEmpty) {
-      setState(() => _status = 'URLを入力してください');
+      _showErrorPopup('URLを入力してください');
       return;
     }
 
     if (!_videoExtractor.isValidUrl(url)) {
-      setState(() => _status = '対応していないURLです');
+      _showErrorPopup('対応していないURLです');
       return;
     }
 
@@ -87,12 +90,28 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
       } else {
         message = 'ダウンロードに失敗しました';
       }
-      
+
       setState(() {
-        _status = message;
         _isDownloading = false;
       });
+      _showErrorPopup(message);
     }
+  }
+
+  void _showErrorPopup(String message) {
+    setState(() {
+      _showError = true;
+      _errorMessage = message;
+    });
+
+    _errorTimer = Timer(Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _showError = false;
+          _errorMessage = '';
+        });
+      }
+    });
   }
 
   @override
@@ -197,6 +216,74 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                           color: Colors.black87,
                         ),
                       ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 300.ms).scale(begin: Offset(0.8, 0.8)),
+              ),
+            ),
+
+          if (_showError)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 30,
+                        spreadRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: CircularProgressIndicator(
+                              value: 1.0,
+                              strokeWidth: 6,
+                              backgroundColor: Colors.grey[200],
+                              valueColor: AlwaysStoppedAnimation(Colors.red),
+                            ),
+                          ),
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          ),
+                        ],
+                      ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          _errorMessage,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                      ),
                     ],
                   ),
                 ).animate().fadeIn(duration: 300.ms).scale(begin: Offset(0.8, 0.8)),
@@ -546,6 +633,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     _downloadManager.dispose();
     _confettiController.dispose();
     _completeTimer?.cancel();
+    _errorTimer?.cancel();
     super.dispose();
   }
 }
