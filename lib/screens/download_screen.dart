@@ -45,7 +45,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     });
 
     _completeAnimController = AnimationController(
-      duration: Duration(milliseconds: 1800),
+      duration: Duration(milliseconds: 1200),
       vsync: this,
     );
 
