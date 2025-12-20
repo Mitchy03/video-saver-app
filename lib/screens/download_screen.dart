@@ -269,7 +269,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               child: AnimatedScale(
                 scale: _showComplete ? 1.0 : 0.7,
                 duration: Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
+                curve: _showComplete ? Curves.elasticOut : Curves.easeInOut,
                 child: Center(
                   child: Container(
                     width: 200,
@@ -343,7 +343,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
               child: AnimatedScale(
                 scale: _showError ? 1.0 : 0.7,
                 duration: Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
+                curve: _showError ? Curves.elasticOut : Curves.easeInOut,
                 child: Center(
                   child: Container(
                     width: 200,
