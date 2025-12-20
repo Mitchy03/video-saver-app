@@ -120,7 +120,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 背景
+          // 背景とメインコンテンツ
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -138,183 +138,190 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
-          // 紙吹雪
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              particleDrag: 0.05,
-              emissionFrequency: 0.05,
-              numberOfParticles: 50,
-              gravity: 0.2,
-              colors: [
-                Color(0xFF833AB4),
-                Color(0xFFFD1D1D),
-                Color(0xFFFCAF45),
-                Colors.white,
-              ],
-            ),
-          ),
-
-          // ブラー背景（ダウンロード中・Complete・エラー時）
+          // ブラー背景（ダウンロード中・Complete・エラー時のみ）
           if (_isDownloading || _showComplete || _showError)
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                color: Colors.transparent,
+            IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: (_isDownloading || _showComplete || _showError) ? 1.0 : 0.0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    color: Colors.transparent,
+                  ),
+                ),
               ),
             ),
 
-          // Complete ポップアップ
-          AnimatedOpacity(
-            opacity: _showComplete ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 400),
-            curve: Curves.easeInOut,
-            child: AnimatedScale(
-              scale: _showComplete ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 400),
-              curve: Curves.easeInOut,
-              child: _showComplete
-                  ? Center(
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 30,
-                              spreadRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: CircularProgressIndicator(
-                                    value: 1.0,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.grey[200],
-                                    valueColor: AlwaysStoppedAnimation(Colors.green),
-                                  ),
-                                ),
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.green,
-                                  ),
-                                  child: Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                ),
-                              ],
-                            ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
-                            SizedBox(height: 20),
-                            Text(
-                              'Complete',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
-                          ],
-                        ),
-                      ),
-                    )
-                  : SizedBox.shrink(),
+          // 紙吹雪（ブラーの上に配置）
+          IgnorePointer(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                particleDrag: 0.05,
+                emissionFrequency: 0.05,
+                numberOfParticles: 50,
+                gravity: 0.2,
+                colors: [
+                  Color(0xFF833AB4),
+                  Color(0xFFFD1D1D),
+                  Color(0xFFFCAF45),
+                  Colors.white,
+                ],
+              ),
             ),
           ),
 
-          // エラーポップアップ
-          AnimatedOpacity(
-            opacity: _showError ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 400),
-            curve: Curves.easeInOut,
-            child: AnimatedScale(
-              scale: _showError ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 400),
+          // Complete ポップアップ
+          if (_showComplete)
+            AnimatedOpacity(
+              opacity: _showComplete ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 500),
               curve: Curves.easeInOut,
-              child: _showError
-                  ? Center(
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 30,
-                              spreadRadius: 10,
-                            ),
-                          ],
+              child: AnimatedScale(
+                scale: _showComplete ? 1.0 : 0.7,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                child: Center(
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 30,
+                          spreadRadius: 10,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: CircularProgressIndicator(
-                                    value: 1.0,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.grey[200],
-                                    valueColor: AlwaysStoppedAnimation(Colors.red),
-                                  ),
-                                ),
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.red,
-                                  ),
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                ),
-                              ],
-                            ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
-                            SizedBox(height: 20),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                _errorMessage,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                              ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: CircularProgressIndicator(
+                                value: 1.0,
+                                strokeWidth: 6,
+                                backgroundColor: Colors.grey[200],
+                                valueColor: AlwaysStoppedAnimation(Colors.green),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.green,
+                              ),
+                              child: Icon(
+                                Icons.check_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
                             ),
                           ],
-                        ),
-                      ),
-                    )
-                  : SizedBox.shrink(),
+                        ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                        SizedBox(height: 20),
+                        Text(
+                          'Complete',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+
+          // エラーポップアップ
+          if (_showError)
+            AnimatedOpacity(
+              opacity: _showError ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              child: AnimatedScale(
+                scale: _showError ? 1.0 : 0.7,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                child: Center(
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 30,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: CircularProgressIndicator(
+                                value: 1.0,
+                                strokeWidth: 6,
+                                backgroundColor: Colors.grey[200],
+                                valueColor: AlwaysStoppedAnimation(Colors.red),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ),
+                          ],
+                        ).animate().scale(begin: Offset(0, 0), duration: 400.ms, curve: Curves.elasticOut),
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            _errorMessage,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3, end: 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       bottomNavigationBar: Container(
