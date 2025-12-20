@@ -45,21 +45,21 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     });
 
     _completeAnimController = AnimationController(
-      duration: Duration(milliseconds: 1200),
+      duration: Duration(milliseconds: 1800),
       vsync: this,
     );
 
     _circleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _completeAnimController,
-        curve: Interval(0.0, 0.6, curve: Curves.easeInOut),
+        curve: Interval(0.0, 0.7, curve: Curves.easeInOutCubic),
       ),
     );
 
     _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _completeAnimController,
-        curve: Interval(0.5, 1.0, curve: Curves.elasticOut),
+        curve: Interval(0.6, 1.0, curve: Curves.easeOutBack),
       ),
     );
   }
