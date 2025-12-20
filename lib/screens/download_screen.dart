@@ -120,7 +120,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 背景
+          // 背景とメインコンテンツ
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -138,7 +138,20 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
-          // 紙吹雪
+          // ブラー背景（ダウンロード中・Complete・エラー時）
+          AnimatedOpacity(
+            opacity: (_isDownloading || _showComplete || _showError) ? 1.0 : 0.0,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                color: Colors.transparent,
+              ),
+            ),
+          ),
+
+          // 紙吹雪（ブラーの上）
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -157,23 +170,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
             ),
           ),
 
-          // ブラー背景（ダウンロード中・Complete・エラー時）
-          if (_isDownloading || _showComplete || _showError)
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                color: Colors.transparent,
-              ),
-            ),
-
           // Complete ポップアップ
           AnimatedOpacity(
             opacity: _showComplete ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 400),
+            duration: Duration(milliseconds: 500),
             curve: Curves.easeInOut,
             child: AnimatedScale(
-              scale: _showComplete ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 400),
+              scale: _showComplete ? 1.0 : 0.7,
+              duration: Duration(milliseconds: 500),
               curve: Curves.easeInOut,
               child: _showComplete
                   ? Center(
@@ -242,11 +246,11 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
           // エラーポップアップ
           AnimatedOpacity(
             opacity: _showError ? 1.0 : 0.0,
-            duration: Duration(milliseconds: 400),
+            duration: Duration(milliseconds: 500),
             curve: Curves.easeInOut,
             child: AnimatedScale(
-              scale: _showError ? 1.0 : 0.8,
-              duration: Duration(milliseconds: 400),
+              scale: _showError ? 1.0 : 0.7,
+              duration: Duration(milliseconds: 500),
               curve: Curves.easeInOut,
               child: _showError
                   ? Center(
