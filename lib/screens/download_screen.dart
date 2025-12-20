@@ -14,11 +14,15 @@ class ModernDownloadScreen extends StatefulWidget {
   State<ModernDownloadScreen> createState() => _ModernDownloadScreenState();
 }
 
-class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
+class _ModernDownloadScreenState extends State<ModernDownloadScreen>
+    with SingleTickerProviderStateMixin {
   final _urlController = TextEditingController();
   final _downloadManager = DownloadManager();
   final _videoExtractor = VideoExtractor();
   final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  late AnimationController _completeAnimController;
+  late Animation<double> _circleAnimation;
+  late Animation<double> _checkAnimation;
   Timer? _completeTimer;
   bool _showComplete = false;
   bool _showError = false;
@@ -39,6 +43,25 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
         _status = progress.message;
       });
     });
+
+    _completeAnimController = AnimationController(
+      duration: Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _circleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _completeAnimController,
+        curve: Interval(0.0, 0.6, curve: Curves.easeInOut),
+      ),
+    );
+
+    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _completeAnimController,
+        curve: Interval(0.5, 1.0, curve: Curves.elasticOut),
+      ),
+    );
   }
 
   Future<void> _startDownload(DownloadQuality quality) async {
@@ -67,6 +90,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
       );
 
       _confettiController.play();
+      _completeAnimController.forward(from: 0.0);
 
       setState(() {
         _showComplete = true;
@@ -285,47 +309,67 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
+                    child: AnimatedBuilder(
+                      animation: _completeAnimController,
+                      builder: (context, child) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 80,
-                              height: 80,
-                              child: CircularProgressIndicator(
-                                value: 1.0,
-                                strokeWidth: 6,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation(Colors.green),
-                              ),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // グラデーション進捗円
+                                SizedBox(
+                                  width: 80,
+                                  height: 80,
+                                  child: CustomPaint(
+                                    painter: GradientCirclePainter(
+                                      progress: _circleAnimation.value,
+                                      gradientColors: [
+                                        Color(0xFF833AB4),
+                                        Color(0xFFFD1D1D),
+                                        Color(0xFFFCAF45),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // チェックマーク
+                                Transform.scale(
+                                  scale: _checkAnimation.value,
+                                  child: Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFF833AB4),
+                                          Color(0xFFFD1D1D),
+                                          Color(0xFFFCAF45),
+                                        ],
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.check_rounded,
+                                      color: Colors.white,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.green,
-                              ),
-                              child: Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 40,
+                            SizedBox(height: 20),
+                            Text(
+                              'Complete',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
                               ),
                             ),
                           ],
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Complete',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -634,8 +678,64 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen> {
     _urlController.dispose();
     _downloadManager.dispose();
     _confettiController.dispose();
+    _completeAnimController.dispose();
     _completeTimer?.cancel();
     _errorTimer?.cancel();
     super.dispose();
+  }
+}
+
+class GradientCirclePainter extends CustomPainter {
+  final double progress;
+  final List<Color> gradientColors;
+
+  GradientCirclePainter({
+    required this.progress,
+    required this.gradientColors,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // 背景円
+    final bgPaint = Paint()
+      ..color = Colors.grey[200]!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // グラデーション円
+    if (progress > 0) {
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final gradient = SweepGradient(
+        colors: gradientColors,
+        startAngle: -3.14 / 2,
+        endAngle: 3.14 * 2 - 3.14 / 2,
+      );
+
+      final gradientPaint = Paint()
+        ..shader = gradient.createShader(rect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..strokeCap = StrokeCap.round;
+
+      final sweepAngle = 2 * 3.14159 * progress;
+      canvas.drawArc(
+        rect,
+        -3.14159 / 2,
+        sweepAngle,
+        false,
+        gradientPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(GradientCirclePainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
