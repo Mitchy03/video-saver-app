@@ -196,7 +196,9 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.1) : Colors.transparent,
+          color: index == 0
+              ? Colors.red.withOpacity(0.5) // ホーム：赤
+              : Colors.blue.withOpacity(0.5), // 履歴：青
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
