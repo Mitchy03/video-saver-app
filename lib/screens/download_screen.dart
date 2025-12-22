@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -603,16 +604,6 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           
           SizedBox(height: 40),
           
-          Text(
-            'Youtube X Instagram Link',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white.withOpacity(0.7),
-            ),
-          ).animate().fadeIn(delay: 200.ms),
-          
-          SizedBox(height: 16),
-          
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -622,7 +613,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 16),
-                  child: Icon(Icons.search, color: Colors.grey[600]),
+                  child: Icon(
+                    Icons.search,
+                    color: Color(0xFFC13584),
+                  ),
                 ),
                 Expanded(
                   child: ShaderMask(
@@ -638,8 +632,11 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     child: TextField(
                       controller: _urlController,
                       decoration: InputDecoration(
-                        hintText: 'URLを貼り付け',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        hintText: 'URL',
+                        hintStyle: TextStyle(
+                          color: Colors.grey.withOpacity(0.5),
+                          fontSize: 16,
+                        ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
@@ -652,7 +649,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+                    if (clipboardData != null && clipboardData.text != null) {
+                      _urlController.text = clipboardData.text!;
+                    }
+                  },
                   child: Text(
                     'Paste',
                     style: TextStyle(
