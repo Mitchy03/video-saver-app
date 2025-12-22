@@ -25,6 +25,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   late AnimationController _completeAnimController;
   late Animation<double> _circleAnimation;
   late Animation<double> _checkAnimation;
+  late AnimationController _maybeLaterController;
+  late Animation<double> _maybeLaterScale;
   late PageController _pageController;
   List<Map<String, dynamic>> _downloadHistory = [];
   Timer? _completeTimer;
@@ -65,6 +67,18 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       CurvedAnimation(
         parent: _completeAnimController,
         curve: Interval(0.5, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _maybeLaterController = AnimationController(
+      duration: Duration(milliseconds: 160),
+      vsync: this,
+    );
+
+    _maybeLaterScale = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(
+        parent: _maybeLaterController,
+        curve: Curves.easeInOut,
       ),
     );
   }
@@ -905,18 +919,24 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
-      transitionDuration: Duration(milliseconds: 400),
+      transitionDuration: Duration(milliseconds: 500),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
-        return SlideTransition(
-          position: Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero)
-              .animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.8, end: 1.0).animate(curved),
-            child: FadeTransition(
-              opacity: animation,
-              child: child,
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.elasticOut,
+          reverseCurve: Curves.easeInBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Interval(0.0, 0.5, curve: Curves.easeOut),
+              ),
             ),
+            child: child,
           ),
         );
       },
@@ -1043,18 +1063,27 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     color: Colors.white.withOpacity(0.3),
                   ),
               SizedBox(height: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                  child: Text(
-                    'Maybe later',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+              ScaleTransition(
+                scale: _maybeLaterScale,
+                child: GestureDetector(
+                  onTap: () async {
+                    await _maybeLaterController.forward();
+                    if (mounted) {
+                      await _maybeLaterController.reverse();
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                    child: Text(
+                      'Maybe later',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -1104,6 +1133,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     _confettiController.dispose();
     _pageController.dispose();
     _completeAnimController.dispose();
+    _maybeLaterController.dispose();
     _completeTimer?.cancel();
     _errorTimer?.cancel();
     super.dispose();
