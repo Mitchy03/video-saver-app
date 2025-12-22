@@ -164,7 +164,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF833AB4).withOpacity(0.45),
+              Color(0xFFC13584).withOpacity(0.4),
+            ],
+          ),
           border: Border(top: BorderSide(color: Colors.white.withOpacity(0.2), width: 0.5)),
         ),
         child: SafeArea(
@@ -196,7 +203,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(isSelected ? 0.2 : 0.1),
+          color: Colors.white.withOpacity(isSelected ? 0.25 : 0.0),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
@@ -260,8 +267,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF833AB4).withOpacity(0.45),
-                    Color(0xFFFD1D1D).withOpacity(0.35),
+                    Color(0xFF833AB4).withOpacity(0.35),
+                    Color(0xFFC13584).withOpacity(0.30),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -294,9 +301,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Color(0xFFFF9A8B),
-                                  Color(0xFFF6416C),
-                                  Color(0xFFFFC371),
+                                  Color(0xFFF77737),
+                                  Color(0xFFE1306C),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(10),
