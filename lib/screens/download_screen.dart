@@ -387,21 +387,13 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   width: 200,
                   height: 200,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF833AB4).withOpacity(0.9),
-                        Color(0xFFC13584).withOpacity(0.9),
-                        Color(0xFFF77737).withOpacity(0.9),
-                      ],
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.3),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                        blurRadius: 30,
+                        spreadRadius: 10,
                       ),
                     ],
                   ),
@@ -437,10 +429,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                   height: 60,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withOpacity(0.12),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 3,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF833AB4),
+                                        Color(0xFFFD1D1D),
+                                        Color(0xFFFCAF45),
+                                      ],
                                     ),
                                   ),
                                   child: Icon(
@@ -458,7 +452,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
