@@ -17,7 +17,7 @@ class ModernDownloadScreen extends StatefulWidget {
 }
 
 class _ModernDownloadScreenState extends State<ModernDownloadScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _urlController = TextEditingController();
   final _downloadManager = DownloadManager();
   final _videoExtractor = VideoExtractor();
