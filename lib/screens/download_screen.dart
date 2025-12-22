@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/download_manager.dart';
 import '../services/video_extractor.dart';
 
@@ -570,10 +571,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               Expanded(
                 child: Text(
                   'Downloader Youtube X Instagram',
-                  style: TextStyle(
+                  style: GoogleFonts.pacifico(
                     fontSize: 28,
-                    fontWeight: FontWeight.bold,
                     color: Colors.white,
+                    fontWeight: FontWeight.w400,
                   ),
                 ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
               ),
@@ -618,15 +619,30 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   child: Icon(Icons.search, color: Colors.grey[600]),
                 ),
                 Expanded(
-                  child: TextField(
-                    controller: _urlController,
-                    decoration: InputDecoration(
-                      hintText: 'URLを貼り付け',
-                      hintStyle: TextStyle(color: Colors.grey[400]),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Color(0xFF833AB4),
+                        Color(0xFFC13584),
+                        Color(0xFFF77737),
+                      ],
+                    ).createShader(bounds),
+                    child: TextField(
+                      controller: _urlController,
+                      decoration: InputDecoration(
+                        hintText: 'URLを貼り付け',
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    style: TextStyle(fontSize: 16),
                   ),
                 ),
                 TextButton(
@@ -693,8 +709,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
               color: Color(0xFF833AB4),
             ),
             textAlign: TextAlign.center,
