@@ -571,9 +571,16 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               Expanded(
                 child: Text(
                   'Downloader Youtube X Instagram',
-                  style: GoogleFonts.pacifico(
+                  style: const TextStyle(
+                    fontFamily: 'Segoe Script',
+                    fontFamilyFallback: [
+                      'Brush Script MT',
+                      'Lucida Handwriting',
+                      'Comic Sans MS',
+                    ],
                     fontSize: 24,
                     color: Colors.white,
+                    fontWeight: FontWeight.w400,
                   ),
                 ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
               ),
