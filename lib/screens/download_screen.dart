@@ -196,9 +196,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
         decoration: BoxDecoration(
-          color: index == 0
-              ? Colors.red.withOpacity(0.5) // ホーム：赤
-              : Colors.blue.withOpacity(0.5), // 履歴：青
+          color: Colors.white.withOpacity(isSelected ? 0.2 : 0.1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
@@ -207,7 +205,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           size: 28,
         ),
       ),
-    ).animate(target: isSelected ? 1 : 0).scale();
+    ).animate(target: isSelected ? 1 : 0).scale(begin: 0.85, end: 1.0);
   }
 
   Widget _buildMainScreen() {
