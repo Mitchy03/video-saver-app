@@ -205,7 +205,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           size: 28,
         ),
       ),
-    ).animate(target: isSelected ? 1 : 0).scale(begin: 0.85, end: 1.0);
+    ).animate(target: isSelected ? 1 : 0).scale(
+          begin: const Offset(0.85, 0.85),
+          end: const Offset(1.0, 1.0),
+        );
   }
 
   Widget _buildMainScreen() {
