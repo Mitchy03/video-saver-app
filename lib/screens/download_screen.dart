@@ -152,14 +152,31 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() => _selectedIndex = index);
-        },
+      body: Stack(
         children: [
-          _buildMainScreen(),
-          _buildHistoryPageScreen(),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF833AB4),
+                  Color(0xFFC13584),
+                  Color(0xFFF77737),
+                ],
+              ),
+            ),
+          ),
+          PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() => _selectedIndex = index);
+            },
+            children: [
+              _buildMainScreen(),
+              _buildHistoryPageScreen(),
+            ],
+          ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -223,17 +240,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       children: [
         // 背景とメインコンテンツ
         Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF833AB4),
-                Color(0xFFFD1D1D),
-                Color(0xFFFCAF45),
-              ],
-            ),
-          ),
+          color: Colors.transparent,
           child: SafeArea(
             child: _buildHomeScreen(),
           ),
@@ -708,17 +715,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
 
   Widget _buildHistoryPageScreen() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF833AB4),
-            Color(0xFFFD1D1D),
-            Color(0xFFFCAF45),
-          ],
-        ),
-      ),
+      color: Colors.transparent,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
