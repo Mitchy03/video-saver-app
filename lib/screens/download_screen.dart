@@ -901,65 +901,101 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   }
 
   void _showSubscriptionSheet() {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF833AB4),
-              Color(0xFFFD1D1D),
-              Color(0xFFFCAF45),
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: Duration(milliseconds: 400),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
+        return SlideTransition(
+          position: Tween<Offset>(begin: Offset(0, 0.1), end: Offset.zero)
+              .animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.8, end: 1.0).animate(curved),
+            child: FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+          ),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _buildPremiumContent();
+      },
+    );
+  }
+
+  Widget _buildPremiumContent() {
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 24, vertical: 80),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF833AB4),
+                Color(0xFFC13584),
+                Color(0xFFF77737),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFFC13584).withOpacity(0.4),
+                blurRadius: 30,
+                spreadRadius: 5,
+              ),
             ],
           ),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-        ),
-        child: Column(
-          children: [
-            SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.workspace_premium, color: Colors.white, size: 24),
+                        SizedBox(width: 8),
+                        Text(
+                          'Premium',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate(onPlay: (controller) => controller.repeat()).shimmer(
+                        duration: Duration(seconds: 2),
+                        color: Colors.white.withOpacity(0.3),
+                      ),
+                ],
               ),
-            ),
-            SizedBox(height: 40),
-            Icon(
-              Icons.workspace_premium,
-              size: 80,
-              color: Colors.white,
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Premium',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              SizedBox(height: 20),
+              Text(
+                'Unlock unlimited downloads',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Unlock unlimited downloads',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
-              ),
-            ),
-            SizedBox(height: 48),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
+              SizedBox(height: 32),
+              Column(
                 children: [
                   _buildFeatureItem('HD Quality Downloads'),
                   _buildFeatureItem('No Ads'),
@@ -967,55 +1003,64 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   _buildFeatureItem('Priority Support'),
                 ],
               ),
-            ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.all(32),
-              child: Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+              SizedBox(height: 32),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
                     ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '¥980 / month',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF833AB4),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Cancel anytime',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Maybe later',
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '¥980 / month',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 16,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF833AB4),
                       ),
                     ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Cancel anytime',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate(onPlay: (controller) => controller.repeat()).shimmer(
+                    duration: Duration(seconds: 2),
+                    color: Colors.white.withOpacity(0.3),
                   ),
-                ],
+              SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                  child: Text(
+                    'Maybe later',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
