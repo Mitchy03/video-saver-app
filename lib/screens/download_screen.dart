@@ -251,56 +251,68 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         if (_isDownloading)
           Positioned(
             top: 350,
-            left: 24,
-            right: 24,
+            left: 48,
+            right: 48,
             child: Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF833AB4).withOpacity(0.45),
+                    Color(0xFFFD1D1D).withOpacity(0.35),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.18)),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF833AB4).withOpacity(0.3),
+                    color: Colors.black.withOpacity(0.25),
                     blurRadius: 20,
-                    spreadRadius: 5,
+                    spreadRadius: 4,
                   ),
                 ],
               ),
               child: Column(
                 children: [
-                  Stack(
-                    children: [
-                      Container(
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        height: 8,
-                        width: MediaQuery.of(context).size.width * _progress * 0.85,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF833AB4),
-                              Color(0xFFFD1D1D),
-                              Color(0xFFFCAF45),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFD1D1D).withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 2,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ],
-                        ),
-                      ).animate(onPlay: (controller) => controller.repeat())
-                          .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.3)),
-                    ],
+                          ),
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            height: 8,
+                            width: constraints.maxWidth * _progress,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFFFF9A8B),
+                                  Color(0xFFF6416C),
+                                  Color(0xFFFFC371),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFFF6416C).withOpacity(0.5),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ).animate(onPlay: (controller) => controller.repeat())
+                              .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.4)),
+                        ],
+                      );
+                    },
                   ),
                   SizedBox(height: 16),
                   Row(
@@ -311,7 +323,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF833AB4),
+                          color: Colors.white,
                         ),
                       ),
                       Text(
@@ -319,7 +331,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFFD1D1D),
+                          color: Colors.white,
                         ),
                       ).animate(onPlay: (controller) => controller.repeat())
                           .fadeIn(duration: 500.ms)
