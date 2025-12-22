@@ -447,12 +447,20 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                             ],
                           ),
                           SizedBox(height: 20),
-                          Text(
-                            'Complete',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [
+                                Color(0xFF833AB4),
+                                Color(0xFFF77737),
+                              ],
+                            ).createShader(bounds),
+                            child: const Text(
+                              'Complete',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],
