@@ -1134,6 +1134,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               ),
               SizedBox(height: 32),
               Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 24),
                 padding: EdgeInsets.symmetric(horizontal: 48, vertical: 18),
                 decoration: BoxDecoration(
                   color: Colors.white,
