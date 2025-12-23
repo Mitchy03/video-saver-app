@@ -232,8 +232,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         ),
         child: Row(
           children: [
-            _buildNavItem(Icons.home_rounded, 'ホーム', 0),
-            _buildNavItem(Icons.history_rounded, '履歴', 1),
+            _buildNavItem(Icons.home_rounded, 0),
+            _buildNavItem(Icons.history_rounded, 1),
           ],
         ),
       ),
@@ -252,7 +252,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, int index) {
     final isSelected = _selectedIndex == index;
     return Expanded(
       child: GestureDetector(
@@ -260,7 +260,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         child: AnimatedContainer(
           duration: Duration(milliseconds: 250),
           curve: Curves.easeInOut,
-          padding: EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(35),
@@ -273,24 +273,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   ]
                 : [],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Color(0xFF833AB4) : Colors.white70,
-                size: 22,
-              ),
-              SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Color(0xFF833AB4) : Colors.white70,
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-            ],
+          child: Center(
+            child: Icon(
+              icon,
+              color: isSelected ? Color(0xFF833AB4) : Colors.white70,
+              size: 28,
+            ),
           ),
         ),
       ).animate(target: isSelected ? 1 : 0).scale(
