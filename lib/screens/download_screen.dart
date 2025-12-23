@@ -838,7 +838,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                       ),
                     )
                   : ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      padding: EdgeInsets.symmetric(vertical: 8),
                       physics: BouncingScrollPhysics(),
                       itemCount: _downloadHistory.length,
                       itemBuilder: (context, index) {
@@ -849,23 +849,24 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                         final title = (item['url'] as String?) ?? 'Video';
 
                         return Container(
-                          margin: EdgeInsets.only(bottom: 16),
+                          margin: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                           padding: EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.08),
-                                blurRadius: 25,
-                                offset: Offset(0, 12),
+                                blurRadius: 20,
+                                spreadRadius: 0,
+                                offset: Offset(0, 4),
                               ),
                             ],
                           ),
                           child: Row(
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
                                     ? Image.network(
                                         thumbnailUrl,
