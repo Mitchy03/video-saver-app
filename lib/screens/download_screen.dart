@@ -1071,12 +1071,13 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 Color(0xFFF77737),
               ],
             ),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: Color(0xFFC13584).withOpacity(0.4),
-                blurRadius: 30,
-                spreadRadius: 5,
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 24,
+                spreadRadius: 0,
+                offset: Offset(0, 8),
               ),
             ],
           ),
@@ -1137,12 +1138,13 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 padding: EdgeInsets.symmetric(vertical: 18),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 12,
-                      offset: Offset(0, 6),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 24,
+                      spreadRadius: 0,
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
