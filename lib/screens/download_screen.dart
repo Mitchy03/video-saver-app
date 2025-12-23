@@ -657,7 +657,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -755,11 +762,11 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           padding: EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
                 offset: Offset(0, 4),
               ),
             ],
