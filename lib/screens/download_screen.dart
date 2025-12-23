@@ -1126,19 +1126,18 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               SizedBox(height: 32),
               Column(
                 children: [
-                  _buildFeatureItem(isJapanese ? 'HD画質ダウンロード' : 'HD Quality Downloads'),
                   _buildFeatureItem(isJapanese ? '広告なし' : 'No Ads'),
-                  _buildFeatureItem(isJapanese ? '無制限ダウンロード' : 'Unlimited Downloads'),
-                  _buildFeatureItem(isJapanese ? '優先サポート' : 'Priority Support'),
+                  _buildFeatureItem(
+                    isJapanese ? '無制限ダウンロード' : 'Unlimited Downloads',
+                  ),
                 ],
               ),
               SizedBox(height: 32),
               Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 18),
+                padding: EdgeInsets.symmetric(horizontal: 48, vertical: 18),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(32),
+                  borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.08),
