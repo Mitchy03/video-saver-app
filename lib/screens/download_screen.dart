@@ -183,37 +183,42 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               _buildHistoryPageScreen(),
             ],
           ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              child: Container(
+                margin: EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Color(0xFF833AB4).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: Row(
+                  children: [
+                    _buildNavItem(Icons.home_rounded, 'ホーム', 0),
+                    _buildNavItem(Icons.history_rounded, '履歴', 1),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF833AB4).withOpacity(0.45),
-              Color(0xFFC13584).withOpacity(0.4),
-            ],
-          ),
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.2), width: 0.5)),
-        ),
-        child: SafeArea(
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                _buildNavItem(Icons.home_rounded, 'ホーム', 0),
-                _buildNavItem(Icons.history_rounded, '履歴', 1),
-              ],
-            ),
-          ),
-        ),
-      ),
+    );
+  }
+
+  void _onNavTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    _pageController.animateToPage(
+      index,
+      duration: Duration(milliseconds: 400),
+      curve: Curves.easeInOutCubic,
     );
   }
 
@@ -221,26 +226,19 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     final isSelected = _selectedIndex == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          _pageController.animateToPage(
-            index,
-            duration: Duration(milliseconds: 400),
-            curve: Curves.easeInOutCubic,
-          );
-        },
+        onTap: () => _onNavTap(index),
         child: AnimatedContainer(
           duration: Duration(milliseconds: 250),
           curve: Curves.easeInOut,
           padding: EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(35),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
                       blurRadius: 8,
-                      offset: Offset(0, 2),
                     ),
                   ]
                 : [],
@@ -251,14 +249,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               Icon(
                 icon,
                 color: isSelected ? Color(0xFF833AB4) : Colors.white70,
-                size: 24,
+                size: 22,
               ),
               SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? Color(0xFF833AB4) : Colors.white70,
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -266,7 +264,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           ),
         ),
       ).animate(target: isSelected ? 1 : 0).scale(
-            begin: const Offset(0.85, 0.85),
+            begin: const Offset(0.9, 0.9),
             end: const Offset(1.0, 1.0),
           ),
     );
