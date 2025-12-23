@@ -184,20 +184,34 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
             ],
           ),
 
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _isDownloading
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: _buildNavBar(),
-                    ),
-                  )
-                : _buildNavBar(),
-          ),
+          if (!_isDownloading)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildNavBar(),
+            ),
+
+          if (_isDownloading) ...[
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            Center(child: _buildProgressCard()),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Opacity(
+                opacity: 0.3,
+                child: _buildNavBar(),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -282,8 +296,94 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     );
   }
 
+  Widget _buildProgressCard() {
+    final double progressValue = _progress.clamp(0.0, 1.0).toDouble();
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 48),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF833AB4).withOpacity(0.35),
+            Color(0xFFC13584).withOpacity(0.30),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 20,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 6,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    // 背景バー
+                    Container(
+                      width: constraints.maxWidth,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    // 進捗バー
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      width: constraints.maxWidth * progressValue,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFF77737), Color(0xFFE1306C)],
+                        ),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Downloading',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                '${(progressValue * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ).animate().fadeIn().scale(begin: Offset(0.9, 0.9));
+  }
+
   Widget _buildMainScreen() {
-    final double progressValue = _progress.clamp(0.0, 1.0);
     return Stack(
       children: [
         // 背景とメインコンテンツ
@@ -297,7 +397,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         // ブラー背景
         IgnorePointer(
           child: AnimatedOpacity(
-            opacity: (_isDownloading || _showComplete || _showError) ? 1.0 : 0.0,
+            opacity: (_showComplete || _showError) ? 1.0 : 0.0,
             duration: Duration(milliseconds: 400),
             curve: Curves.easeInOut,
             child: BackdropFilter(
@@ -308,99 +408,6 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
             ),
           ),
         ),
-
-        // DL進捗表示（ブラーの上）
-        if (_isDownloading)
-          Positioned(
-            top: 350,
-            left: 48,
-            right: 48,
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF833AB4).withOpacity(0.35),
-                    Color(0xFFC13584).withOpacity(0.30),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.18)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    blurRadius: 20,
-                    spreadRadius: 4,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Stack(
-                      children: [
-                        FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: progressValue,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFFF77737),
-                                  Color(0xFFE1306C),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Color(0xFFF6416C).withOpacity(0.5),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Downloading',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '${(progressValue * 100).toInt()}%',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ).animate(onPlay: (controller) => controller.repeat())
-                          .fadeIn(duration: 500.ms)
-                          .then()
-                          .fadeOut(duration: 500.ms),
-                    ],
-                  ),
-                ],
-              ),
-            ).animate().fadeIn().scale(begin: Offset(0.9, 0.9)),
-          ),
 
         // 紙吹雪
         IgnorePointer(
