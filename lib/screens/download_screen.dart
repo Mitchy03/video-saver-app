@@ -95,12 +95,16 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       );
 
       _confettiController.play();
+      final platform = _videoExtractor.detectPlatform(url);
+      final platformLabel = platform.toString().split('.').last;
+      final thumbnailUrl = _getThumbnailUrl(url, platform);
       // 履歴に追加
       _downloadHistory.insert(0, {
         'url': url,
         'quality': quality == DownloadQuality.high ? 'HD' : 'SD',
         'date': DateTime.now(),
-        'platform': _videoExtractor.detectPlatform(url).toString().split('.').last,
+        'platform': platformLabel,
+        'thumbnailUrl': thumbnailUrl,
       });
       _completeAnimController.forward(from: 0.0);
 
@@ -835,59 +839,82 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     )
                   : ListView.builder(
                       padding: EdgeInsets.symmetric(horizontal: 24),
+                      physics: BouncingScrollPhysics(),
                       itemCount: _downloadHistory.length,
                       itemBuilder: (context, index) {
                         final item = _downloadHistory[index];
                         final date = item['date'] as DateTime;
                         final timeAgo = _getTimeAgo(date);
+                        final thumbnailUrl = item['thumbnailUrl'] as String?;
+                        final title = (item['url'] as String?) ?? 'Video';
 
                         return Container(
-                          margin: EdgeInsets.only(bottom: 12),
-                          padding: EdgeInsets.all(16),
+                          margin: EdgeInsets.only(bottom: 16),
+                          padding: EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 25,
+                                offset: Offset(0, 12),
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                padding: EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF833AB4).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  _getPlatformIcon(item['platform']),
-                                  color: Color(0xFF833AB4),
-                                  size: 24,
-                                ),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
+                                    ? Image.network(
+                                        thumbnailUrl,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            _buildThumbnailPlaceholder(),
+                                      )
+                                    : _buildThumbnailPlaceholder(),
                               ),
-                              SizedBox(width: 12),
+                              SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item['platform'].toUpperCase(),
+                                      title,
                                       style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
                                         color: Colors.black87,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      timeAgo,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          _getPlatformIcon(item['platform']),
+                                          size: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          timeAgo,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
                                   gradient: item['quality'] == 'HD'
                                       ? LinearGradient(
@@ -897,8 +924,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                           ],
                                         )
                                       : null,
-                                  color: item['quality'] == 'SD' ? Colors.grey[300] : null,
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: item['quality'] == 'SD' ? Colors.grey[200] : null,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
                                   item['quality'],
@@ -908,6 +935,11 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                     color: item['quality'] == 'HD' ? Colors.white : Colors.black54,
                                   ),
                                 ),
+                              ),
+                              SizedBox(width: 12),
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey[400],
                               ),
                             ],
                           ),
@@ -919,6 +951,57 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildThumbnailPlaceholder() {
+    return Container(
+      width: 60,
+      height: 60,
+      color: Colors.grey.withOpacity(0.3),
+      child: Icon(
+        Icons.video_library,
+        color: Colors.white54,
+      ),
+    );
+  }
+
+  String? _getThumbnailUrl(String url, VideoPlatform platform) {
+    switch (platform) {
+      case VideoPlatform.youtube:
+      case VideoPlatform.youtubeShorts:
+        final videoId = _extractYouTubeVideoId(url);
+        if (videoId != null && videoId.isNotEmpty) {
+          return 'https://img.youtube.com/vi/$videoId/mqdefault.jpg';
+        }
+        return null;
+      case VideoPlatform.twitter:
+      case VideoPlatform.instagram:
+      case VideoPlatform.unknown:
+        return null;
+    }
+  }
+
+  String? _extractYouTubeVideoId(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return null;
+
+    if (uri.host.contains('youtu.be')) {
+      return uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+    }
+
+    final watchId = uri.queryParameters['v'];
+    if (watchId != null && watchId.isNotEmpty) {
+      return watchId;
+    }
+
+    if (uri.pathSegments.contains('shorts')) {
+      final shortsIndex = uri.pathSegments.indexOf('shorts');
+      if (shortsIndex >= 0 && uri.pathSegments.length > shortsIndex + 1) {
+        return uri.pathSegments[shortsIndex + 1];
+      }
+    }
+
+    return null;
   }
 
   String _getTimeAgo(DateTime date) {
