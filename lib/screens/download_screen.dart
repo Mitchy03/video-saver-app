@@ -188,24 +188,36 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
             left: 0,
             right: 0,
             bottom: 0,
-            child: SafeArea(
-              child: Container(
-                margin: EdgeInsets.only(left: 24, right: 24, bottom: 24),
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Color(0xFF833AB4).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Row(
-                  children: [
-                    _buildNavItem(Icons.home_rounded, 'ホーム', 0),
-                    _buildNavItem(Icons.history_rounded, '履歴', 1),
-                  ],
-                ),
-              ),
-            ),
+            child: _isDownloading
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: _buildNavBar(),
+                    ),
+                  )
+                : _buildNavBar(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavBar() {
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.only(left: 24, right: 24, bottom: 24),
+        padding: EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Color(0xFF833AB4).withOpacity(0.3),
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Row(
+          children: [
+            _buildNavItem(Icons.home_rounded, 'ホーム', 0),
+            _buildNavItem(Icons.history_rounded, '履歴', 1),
+          ],
+        ),
       ),
     );
   }
@@ -271,6 +283,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   }
 
   Widget _buildMainScreen() {
+    final double progressValue = _progress.clamp(0.0, 1.0);
     return Stack(
       children: [
         // 背景とメインコンテンツ
@@ -324,22 +337,20 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 ],
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Stack(
-                        children: [
-                          Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          AnimatedContainer(
-                            duration: Duration(milliseconds: 300),
-                            height: 8,
-                            width: constraints.maxWidth * _progress,
+                  Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Stack(
+                      children: [
+                        FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: progressValue,
+                          child: Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -356,11 +367,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                 ),
                               ],
                             ),
-                          ).animate(onPlay: (controller) => controller.repeat())
-                              .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.4)),
-                        ],
-                      );
-                    },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 16),
                   Row(
@@ -375,7 +385,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                         ),
                       ),
                       Text(
-                        '${(_progress * 100).toInt()}%',
+                        '${(progressValue * 100).toInt()}%',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
