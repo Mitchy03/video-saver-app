@@ -198,13 +198,17 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           border: Border(top: BorderSide(color: Colors.white.withOpacity(0.2), width: 0.5)),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(Icons.home_rounded, 0),
-                _buildNavItem(Icons.history_rounded, 1),
+                _buildNavItem(Icons.home_rounded, 'ホーム', 0),
+                _buildNavItem(Icons.history_rounded, '履歴', 1),
               ],
             ),
           ),
@@ -213,32 +217,59 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () {
-        _pageController.animateToPage(
-          index,
-          duration: Duration(milliseconds: 400),
-          curve: Curves.easeInOutCubic,
-        );
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(isSelected ? 0.25 : 0.0),
-          borderRadius: BorderRadius.circular(20),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          _pageController.animateToPage(
+            index,
+            duration: Duration(milliseconds: 400),
+            curve: Curves.easeInOutCubic,
+          );
+        },
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Color(0xFF833AB4) : Colors.white70,
+                size: 24,
+              ),
+              SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Color(0xFF833AB4) : Colors.white70,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Icon(
-          icon,
-          color: isSelected ? Colors.white : Colors.white70,
-          size: 28,
-        ),
-      ),
-    ).animate(target: isSelected ? 1 : 0).scale(
-          begin: const Offset(0.85, 0.85),
-          end: const Offset(1.0, 1.0),
-        );
+      ).animate(target: isSelected ? 1 : 0).scale(
+            begin: const Offset(0.85, 0.85),
+            end: const Offset(1.0, 1.0),
+          ),
+    );
   }
 
   Widget _buildMainScreen() {
