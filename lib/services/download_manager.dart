@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:process_run/shell.dart';
 
 class DownloadProgress {
   DownloadProgress({required this.progress, required this.message});
@@ -74,11 +74,56 @@ class DownloadManager {
     ));
 
     try {
-      final shell = Shell();
+      final process = await Process.start(
+        _ytdlpPath!,
+        [
+          '--newline',
+          '--ffmpeg-location',
+          _ffmpegPath!,
+          '-f',
+          qualityFlag,
+          '-o',
+          outputPath,
+          url,
+        ],
+      );
 
-      await shell.run('''
-        "$_ytdlpPath" --ffmpeg-location "$_ffmpegPath" -f "$qualityFlag" -o "$outputPath" "$url"
-      ''');
+      final stdoutSubscription = process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+        final match = RegExp(r'(\d+\.?\d*)%').firstMatch(line);
+        if (match != null) {
+          final percent = double.tryParse(match.group(1)!);
+          if (percent != null) {
+            _progressController.add(
+              DownloadProgress(
+                progress: percent / 100,
+                message: line.trim(),
+              ),
+            );
+          }
+        }
+      });
+
+      final stderrSubscription = process.stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+        // エラーメッセージがあれば進捗に流す
+        _progressController.add(
+          DownloadProgress(progress: 0.0, message: line.trim()),
+        );
+      });
+
+      final exitCode = await process.exitCode;
+
+      await stdoutSubscription.cancel();
+      await stderrSubscription.cancel();
+
+      if (exitCode != 0) {
+        throw Exception('yt-dlp exited with code $exitCode');
+      }
 
       _progressController.add(DownloadProgress(
         progress: 1.0,
