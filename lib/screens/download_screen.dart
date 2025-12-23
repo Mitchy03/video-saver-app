@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -1052,6 +1053,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   }
 
   Widget _buildPremiumContent() {
+    final isJapanese = Platform.localeName.startsWith('ja');
+
     return Center(
       child: Material(
         color: Colors.transparent,
@@ -1111,7 +1114,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               ),
               SizedBox(height: 20),
               Text(
-                'Unlock unlimited downloads',
+                isJapanese ? '無制限ダウンロードを解除' : 'Unlock unlimited downloads',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -1122,10 +1125,10 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
               SizedBox(height: 32),
               Column(
                 children: [
-                  _buildFeatureItem('HD Quality Downloads'),
-                  _buildFeatureItem('No Ads'),
-                  _buildFeatureItem('Unlimited Downloads'),
-                  _buildFeatureItem('Priority Support'),
+                  _buildFeatureItem(isJapanese ? 'HD画質ダウンロード' : 'HD Quality Downloads'),
+                  _buildFeatureItem(isJapanese ? '広告なし' : 'No Ads'),
+                  _buildFeatureItem(isJapanese ? '無制限ダウンロード' : 'Unlimited Downloads'),
+                  _buildFeatureItem(isJapanese ? '優先サポート' : 'Priority Support'),
                 ],
               ),
               SizedBox(height: 32),
@@ -1146,7 +1149,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 child: Column(
                   children: [
                     Text(
-                      '¥980 / month',
+                      isJapanese ? '¥500 / 月' : '\$5 / month',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -1155,7 +1158,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Cancel anytime',
+                      isJapanese ? 'いつでもキャンセル可能' : 'Cancel anytime',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -1175,7 +1178,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                   child: Text(
-                    'Maybe later',
+                    isJapanese ? '後で' : 'Maybe later',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 16,
