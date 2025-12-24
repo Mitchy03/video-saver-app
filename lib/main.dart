@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'services/purchase_service.dart';
 import 'services/download_manager.dart';
@@ -7,7 +9,12 @@ import 'services/ad_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AdService.initialize();
+  if (Platform.isAndroid || Platform.isIOS) {
+    await AdService.initialize();
+  } else {
+    // Skip ad initialization on unsupported platforms (e.g., Windows)
+    debugPrint('Skipping ad initialization on this platform');
+  }
   await PurchaseService.initialize();
   runApp(const MyApp());
 }
