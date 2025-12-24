@@ -1280,8 +1280,9 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         final isJapanese = Platform.localeName.startsWith('ja');
         return Center(
           child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 8),
-            padding: EdgeInsets.all(32),
+            width: MediaQuery.of(context).size.width * 0.95,
+            margin: EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -1349,7 +1350,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     );
                   },
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 16),
                 Text(
                   isJapanese ? 'ようこそ！' : 'Welcome!',
                   style: TextStyle(
@@ -1366,14 +1367,14 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     fontSize: 20,
                   ),
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 16),
                 _buildCompleteBenefit(Icons.block, isJapanese ? '広告なし' : 'No Ads'),
                 SizedBox(height: 12),
                 _buildCompleteBenefit(
                   Icons.all_inclusive,
                   isJapanese ? '無制限ダウンロード' : 'Unlimited Downloads',
                 ),
-                SizedBox(height: 32),
+                SizedBox(height: 20),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(
