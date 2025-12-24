@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/download_manager.dart';
+import '../services/purchase_service.dart';
 import '../services/video_extractor.dart';
 
 class ModernDownloadScreen extends StatefulWidget {
@@ -1133,41 +1134,51 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 ],
               ),
               SizedBox(height: 32),
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(horizontal: 24),
-                padding: EdgeInsets.symmetric(horizontal: 48, vertical: 18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 24,
-                      spreadRadius: 0,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      isJapanese ? '¥500 / 月' : '\$5 / month',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF833AB4),
+              GestureDetector(
+                onTap: () async {
+                  final success = await PurchaseService.purchasePremium();
+                  if (success) {
+                    Navigator.of(context).pop();
+                    _confettiController.play();
+                    _showPurchaseCompleteDialog();
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 48, vertical: 18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 24,
+                        spreadRadius: 0,
+                        offset: Offset(0, 8),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      isJapanese ? 'いつでもキャンセル可能' : 'Cancel anytime',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        isJapanese ? '¥500 / 月' : '\$5 / month',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF833AB4),
+                        ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 4),
+                      Text(
+                        isJapanese ? 'いつでもキャンセル可能' : 'Cancel anytime',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ).animate(onPlay: (controller) => controller.repeat()).shimmer(
                     duration: Duration(seconds: 2),
@@ -1225,6 +1236,136 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showPurchaseCompleteDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.7),
+      transitionDuration: Duration(milliseconds: 500),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+            CurvedAnimation(parent: animation, curve: Curves.elasticOut),
+          ),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final isJapanese = Platform.localeName.startsWith('ja');
+        return Center(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF833AB4),
+                  Color(0xFFC13584),
+                  Color(0xFFF77737),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFFC13584).withOpacity(0.5),
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.5),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.workspace_premium,
+                    size: 48,
+                    color: Color(0xFFC13584),
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  isJapanese ? 'ようこそ！' : 'Welcome!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  isJapanese ? 'プレミアムメンバー' : 'Premium Member',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 20,
+                  ),
+                ),
+                SizedBox(height: 24),
+                _buildCompleteBenefit(Icons.block, isJapanese ? '広告なし' : 'No Ads'),
+                SizedBox(height: 12),
+                _buildCompleteBenefit(
+                  Icons.all_inclusive,
+                  isJapanese ? '無制限ダウンロード' : 'Unlimited Downloads',
+                ),
+                SizedBox(height: 32),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: Text(
+                      isJapanese ? '始める' : 'Get Started',
+                      style: TextStyle(
+                        color: Color(0xFFC13584),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCompleteBenefit(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        SizedBox(width: 12),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 

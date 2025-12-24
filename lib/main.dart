@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'services/purchase_service.dart';
 import 'services/download_manager.dart';
 import 'services/video_extractor.dart';
 import 'screens/download_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PurchaseService.initialize();
   runApp(const MyApp());
 }
 
