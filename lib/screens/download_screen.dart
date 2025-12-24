@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/download_manager.dart';
 import '../services/purchase_service.dart';
 import '../services/video_extractor.dart';
@@ -42,6 +43,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   bool _isDownloading = false;
   double _progress = 0.0;
   int _selectedIndex = 0;
+  int _selectedFilter = 0;
 
   @override
   void initState() {
@@ -161,6 +163,40 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       });
       _showErrorPopup(message);
     }
+  }
+
+  List<Map<String, dynamic>> get _filteredHistory {
+    if (_selectedFilter == 0) return _downloadHistory;
+
+    String platform;
+    switch (_selectedFilter) {
+      case 1:
+        platform = 'instagram';
+        break;
+      case 2:
+        platform = 'youtube';
+        break;
+      case 3:
+        platform = 'twitter';
+        break;
+      default:
+        return _downloadHistory;
+    }
+
+    return _downloadHistory.where((item) {
+      final url = item['url']?.toString().toLowerCase() ?? '';
+      final platformLabel = (item['platform'] as String?)?.toLowerCase() ?? '';
+      if (platform == 'instagram') {
+        return url.contains('instagram') || platformLabel.contains('instagram');
+      }
+      if (platform == 'youtube') {
+        return url.contains('youtube') || url.contains('youtu.be') || platformLabel.contains('youtube');
+      }
+      if (platform == 'twitter') {
+        return url.contains('twitter') || url.contains('x.com') || platformLabel.contains('twitter');
+      }
+      return true;
+    }).toList();
   }
 
   void _showErrorPopup(String message) {
@@ -818,149 +854,219 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '${_downloadHistory.length} downloads',
+                    '${_filteredHistory.length} downloads',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.7),
                     ),
                   ),
+                  SizedBox(height: 12),
+                  _buildFilterTabs(),
                 ],
               ),
             ),
             Expanded(
-              child: _downloadHistory.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.history_rounded,
-                            size: 80,
-                            color: Colors.white.withOpacity(0.3),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No downloads yet',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white.withOpacity(0.7),
+              child: AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                child: _filteredHistory.isEmpty
+                    ? Center(
+                        key: ValueKey('empty-$_selectedFilter'),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.history_rounded,
+                              size: 80,
+                              color: Colors.white.withOpacity(0.3),
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      physics: BouncingScrollPhysics(),
-                      itemCount: _downloadHistory.length,
-                      itemBuilder: (context, index) {
-                        final item = _downloadHistory[index];
-                        final date = item['date'] as DateTime;
-                        final timeAgo = _getTimeAgo(date);
-                        final thumbnailUrl = item['thumbnailUrl'] as String?;
-                        final title = (item['url'] as String?) ?? 'Video';
+                            SizedBox(height: 16),
+                            Text(
+                              'No downloads yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        key: ValueKey('list-$_selectedFilter'),
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        physics: BouncingScrollPhysics(),
+                        itemCount: _filteredHistory.length,
+                        itemBuilder: (context, index) {
+                          final item = _filteredHistory[index];
+                          final date = item['date'] as DateTime;
+                          final timeAgo = _getTimeAgo(date);
+                          final thumbnailUrl = item['thumbnailUrl'] as String?;
+                          final title = (item['url'] as String?) ?? 'Video';
 
-                        return Container(
-                          margin: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 20,
-                                spreadRadius: 0,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
-                                    ? Image.network(
-                                        thumbnailUrl,
-                                        width: 60,
-                                        height: 60,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            _buildThumbnailPlaceholder(),
-                                      )
-                                    : _buildThumbnailPlaceholder(),
-                              ),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      title,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          _getPlatformIcon(item['platform']),
-                                          size: 16,
-                                          color: Colors.grey[600],
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 20,
+                                  spreadRadius: 0,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
+                                      ? Image.network(
+                                          thumbnailUrl,
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              _buildThumbnailPlaceholder(),
+                                        )
+                                      : _buildThumbnailPlaceholder(),
+                                ),
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black87,
                                         ),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          timeAgo,
-                                          style: TextStyle(
-                                            fontSize: 12,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            _getPlatformIcon(item['platform']),
+                                            size: 16,
                                             color: Colors.grey[600],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  gradient: item['quality'] == 'HD'
-                                      ? LinearGradient(
-                                          colors: [
-                                            Color(0xFF833AB4),
-                                            Color(0xFFFD1D1D),
-                                          ],
-                                        )
-                                      : null,
-                                  color: item['quality'] == 'SD' ? Colors.grey[200] : null,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  item['quality'],
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: item['quality'] == 'HD' ? Colors.white : Colors.black54,
+                                          SizedBox(width: 6),
+                                          Text(
+                                            timeAgo,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 12),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey[400],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: item['quality'] == 'HD'
+                                        ? LinearGradient(
+                                            colors: [
+                                              Color(0xFF833AB4),
+                                              Color(0xFFFD1D1D),
+                                            ],
+                                          )
+                                        : null,
+                                    color: item['quality'] == 'SD' ? Colors.grey[200] : null,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    item['quality'],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: item['quality'] == 'HD' ? Colors.white : Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.grey[400],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        children: [
+          _buildFilterTab('ALL', null, 0),
+          _buildFilterTab('', FontAwesomeIcons.instagram, 1),
+          _buildFilterTab('', FontAwesomeIcons.youtube, 2),
+          _buildFilterTab('', FontAwesomeIcons.xTwitter, 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String label, IconData? icon, int index) {
+    final isSelected = _selectedFilter == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedFilter = index;
+          });
+        },
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          padding: EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      Color(0xFF833AB4),
+                      Color(0xFFC13584),
+                      Color(0xFFF77737),
+                    ],
+                  )
+                : null,
+            borderRadius: BorderRadius.circular(26),
+          ),
+          child: Center(
+            child: label.isNotEmpty
+                ? Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  )
+                : FaIcon(
+                    icon,
+                    color: isSelected ? Colors.white : Colors.white70,
+                    size: 20,
+                  ),
+          ),
         ),
       ),
     );
@@ -1032,11 +1138,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     switch (platform.toLowerCase()) {
       case 'youtube':
       case 'youtubeshorts':
-        return Icons.play_circle_fill;
+        return FontAwesomeIcons.youtube;
       case 'twitter':
-        return Icons.tag;
+      case 'x':
+        return FontAwesomeIcons.xTwitter;
       case 'instagram':
-        return Icons.camera_alt;
+        return FontAwesomeIcons.instagram;
       default:
         return Icons.video_library;
     }
