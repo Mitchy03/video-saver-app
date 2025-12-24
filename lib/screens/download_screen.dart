@@ -1011,61 +1011,95 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
 
   Widget _buildFilterTabs() {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 16),
+      margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(30),
       ),
-      child: Row(
-        children: [
-          _buildFilterTab('ALL', null, 0),
-          _buildFilterTab('', FontAwesomeIcons.instagram, 1),
-          _buildFilterTab('', FontAwesomeIcons.youtube, 2),
-          _buildFilterTab('', FontAwesomeIcons.xTwitter, 3),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tabWidth = constraints.maxWidth / 4;
+          return GestureDetector(
+            onHorizontalDragEnd: (details) {
+              final velocity = details.primaryVelocity ?? 0;
+              if (velocity < 0 && _selectedFilter < 3) {
+                setState(() => _selectedFilter++);
+              } else if (velocity > 0 && _selectedFilter > 0) {
+                setState(() => _selectedFilter--);
+              }
+            },
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  left: tabWidth * _selectedFilter,
+                  top: 0,
+                  bottom: 0,
+                  width: tabWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF833AB4),
+                          Color(0xFFC13584),
+                          Color(0xFFF77737),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(26),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFFC13584).withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _buildFilterTab('ALL', null, 0),
+                    _buildFilterTab(null, FontAwesomeIcons.instagram, 1),
+                    _buildFilterTab(null, FontAwesomeIcons.youtube, 2),
+                    _buildFilterTab(null, FontAwesomeIcons.xTwitter, 3),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFilterTab(String label, IconData? icon, int index) {
+  Widget _buildFilterTab(String? label, IconData? icon, int index) {
     final isSelected = _selectedFilter == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedFilter = index;
-          });
-        },
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
+        onTap: () => setState(() => _selectedFilter = index),
+        child: Container(
           padding: EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      Color(0xFF833AB4),
-                      Color(0xFFC13584),
-                      Color(0xFFF77737),
-                    ],
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(26),
-          ),
+          color: Colors.transparent,
           child: Center(
-            child: label.isNotEmpty
-                ? Text(
-                    label,
-                    style: TextStyle(
+            child: AnimatedDefaultTextStyle(
+              duration: Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 14,
+              ),
+              child: label != null
+                  ? Text(label)
+                  : FaIcon(
+                      icon,
                       color: isSelected ? Colors.white : Colors.white70,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      size: 18,
                     ),
-                  )
-                : FaIcon(
-                    icon,
-                    color: isSelected ? Colors.white : Colors.white70,
-                    size: 20,
-                  ),
+            ),
           ),
         ),
       ),
