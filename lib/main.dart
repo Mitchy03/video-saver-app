@@ -3,9 +3,11 @@ import 'services/purchase_service.dart';
 import 'services/download_manager.dart';
 import 'services/video_extractor.dart';
 import 'screens/download_screen.dart';
+import 'services/ad_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AdService.initialize();
   await PurchaseService.initialize();
   runApp(const MyApp());
 }

@@ -9,6 +9,7 @@ import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/download_manager.dart';
+import '../services/ad_service.dart';
 import '../services/purchase_service.dart';
 import '../services/video_extractor.dart';
 
@@ -147,6 +148,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           });
         }
       });
+
+      await _handleAdAfterCompletion(quality);
     } catch (e) {
       String message;
       if (e.toString().contains('inappropriate') || 
@@ -213,6 +216,20 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         });
       }
     });
+  }
+
+  Future<void> _handleAdAfterCompletion(DownloadQuality quality) async {
+    final isPremium = await PurchaseService.isPremium();
+    if (isPremium) return;
+
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    if (quality == DownloadQuality.high) {
+      await AdService.showRewardedAd();
+    } else {
+      await AdService.showInterstitialAd();
+    }
   }
 
   @override

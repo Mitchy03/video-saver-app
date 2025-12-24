@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/ad_service.dart';
 import '../services/video_extractor.dart';
-import '../state/app_state.dart';
 import 'download_progress_screen.dart';
 
 class AdScreenArguments {
@@ -47,8 +46,7 @@ class _AdScreenState extends State<AdScreen> {
   Future<void> _finishAd(VideoExtractionResult result) async {
     if (_completed) return;
     _completed = true;
-    final adService = context.read<AppState>().adService;
-    await adService.showRewardedAd(onEarned: () {
+    await AdService.showRewardedAdWithCallback(onUserEarnedReward: () {
       if (!mounted) return;
       Navigator.pushReplacementNamed(
         context,
