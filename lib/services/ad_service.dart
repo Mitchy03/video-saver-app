@@ -28,6 +28,12 @@ class AdService {
 
   // 初期化
   static Future<void> initialize() async {
+    // Windows/macOS/Linux では広告をスキップ
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      print('Ads not supported on this platform');
+      return;
+    }
+
     if (_isInitialized) return;
     await MobileAds.instance.initialize();
     _isInitialized = true;
@@ -74,6 +80,7 @@ class AdService {
 
   // 通常Download完了後に表示（すぐ閉じれる）
   static Future<void> showInterstitialAd() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     if (_interstitialAd == null) return;
 
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
@@ -92,10 +99,16 @@ class AdService {
 
   // HD Download完了後に表示（スキップ不可、高単価）
   static Future<void> showRewardedAd() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     await showRewardedAdWithCallback();
   }
 
   static Future<void> showRewardedAdWithCallback({void Function()? onUserEarnedReward}) async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      onUserEarnedReward?.call();
+      return;
+    }
+
     if (_rewardedAd == null) {
       onUserEarnedReward?.call();
       return;
