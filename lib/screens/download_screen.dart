@@ -322,8 +322,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF833AB4).withOpacity(0.35),
-            Color(0xFFC13584).withOpacity(0.30),
+            Color(0xFF833AB4).withOpacity(0.9),
+            Color(0xFFC13584).withOpacity(0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -362,7 +362,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                       height: 6,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFFF77737), Color(0xFFE1306C)],
+                          colors: [Color(0xFFF77737), Color(0xFFC13584)],
                         ),
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -389,7 +389,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white70,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -490,8 +490,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                     progress: _circleAnimation.value,
                                     gradientColors: [
                                       Color(0xFF833AB4),
-                                      Color(0xFFFD1D1D),
-                                      Color(0xFFFCAF45),
+                                      Color(0xFFC13584),
+                                      Color(0xFFF77737),
                                     ],
                                   ),
                                 ),
@@ -507,8 +507,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                     gradient: LinearGradient(
                                       colors: [
                                         Color(0xFF833AB4),
-                                        Color(0xFFFD1D1D),
-                                        Color(0xFFFCAF45),
+                                        Color(0xFFC13584),
+                                        Color(0xFFF77737),
                                       ],
                                     ),
                                   ),
@@ -527,7 +527,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: Color(0xFFC13584),
                             ),
                           ),
                         ],
@@ -569,33 +569,26 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 80,
-                            height: 80,
-                            child: CircularProgressIndicator(
-                              value: 1.0,
-                              strokeWidth: 6,
-                              backgroundColor: Colors.grey[200],
-                              valueColor: AlwaysStoppedAnimation(Colors.red),
-                            ),
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF833AB4),
+                              Color(0xFFC13584),
+                              Color(0xFFF77737),
+                            ],
                           ),
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.red,
-                            ),
-                            child: Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                          ),
-                        ],
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                       ),
                       SizedBox(height: 20),
                       Padding(
@@ -605,7 +598,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: Color(0xFFC13584),
                           ),
                           textAlign: TextAlign.center,
                         ),
