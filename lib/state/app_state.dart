@@ -41,13 +41,11 @@ class DownloadHistoryItem {
 class AppState extends ChangeNotifier {
   AppState()
       : premiumService = PremiumService(),
-        adService = AdService(),
         extractor = VideoExtractor(),
         downloadManager = DownloadManager(),
         preferencesService = PreferencesService();
 
   final PremiumService premiumService;
-  final AdService adService;
   final VideoExtractor extractor;
   final DownloadManager downloadManager;
   final PreferencesService preferencesService;
@@ -65,7 +63,7 @@ class AppState extends ChangeNotifier {
   Future<void> bootstrap() async {
     try {
       await premiumService.initialize();
-      await adService.initialize();
+      await AdService.initialize();
       _isPremium = await premiumService.isPremiumUser();
       _history = await preferencesService.loadHistory();
       _initialized = true;
