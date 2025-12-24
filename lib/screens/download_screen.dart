@@ -19,7 +19,7 @@ class ModernDownloadScreen extends StatefulWidget {
 }
 
 class _ModernDownloadScreenState extends State<ModernDownloadScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _urlController = TextEditingController();
   final _downloadManager = DownloadManager();
   final _videoExtractor = VideoExtractor();
@@ -27,6 +27,9 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   late AnimationController _completeAnimController;
   late Animation<double> _circleAnimation;
   late Animation<double> _checkAnimation;
+  late AnimationController _completionAnimController;
+  late Animation<double> _circleProgressAnimation;
+  late Animation<double> _iconScaleAnimation;
   late PageController _pageController;
   List<Map<String, dynamic>> _downloadHistory = [];
   Timer? _completeTimer;
@@ -67,6 +70,25 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       CurvedAnimation(
         parent: _completeAnimController,
         curve: Interval(0.5, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _completionAnimController = AnimationController(
+      duration: Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _circleProgressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _completionAnimController,
+        curve: Interval(0.0, 0.7, curve: Curves.easeInOut),
+      ),
+    );
+
+    _iconScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _completionAnimController,
+        curve: Interval(0.7, 1.0, curve: Curves.elasticOut),
       ),
     );
   }
@@ -1240,6 +1262,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   }
 
   void _showPurchaseCompleteDialog() {
+    _completionAnimController.forward(from: 0.0);
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -1257,7 +1280,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         final isJapanese = Platform.localeName.startsWith('ja');
         return Center(
           child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 32),
+            margin: EdgeInsets.symmetric(horizontal: 16),
             padding: EdgeInsets.all(32),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -1281,25 +1304,50 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.5),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                AnimatedBuilder(
+                  animation: _completionAnimController,
+                  builder: (context, child) {
+                    return Container(
+                      width: 100,
+                      height: 100,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CustomPaint(
+                            size: Size(100, 100),
+                            painter: CircleProgressPainter(
+                              progress: _circleProgressAnimation.value,
+                              color: Colors.white,
+                              strokeWidth: 4,
+                            ),
+                          ),
+                          Transform.scale(
+                            scale: _iconScaleAnimation.value,
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.5),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.workspace_premium,
+                                size: 48,
+                                color: Color(0xFFC13584),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.workspace_premium,
-                    size: 48,
-                    color: Color(0xFFC13584),
-                  ),
+                    );
+                  },
                 ),
                 SizedBox(height: 24),
                 Text(
@@ -1376,9 +1424,48 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     _confettiController.dispose();
     _pageController.dispose();
     _completeAnimController.dispose();
+    _completionAnimController.dispose();
     _completeTimer?.cancel();
     _errorTimer?.cancel();
     super.dispose();
+  }
+}
+
+class CircleProgressPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  CircleProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final sweepAngle = 2 * 3.14159 * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -3.14159 / 2,
+      sweepAngle,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CircleProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
 
