@@ -1280,7 +1280,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
         final isJapanese = Platform.localeName.startsWith('ja');
         return Center(
           child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 16),
+            margin: EdgeInsets.symmetric(horizontal: 8),
             padding: EdgeInsets.all(32),
             decoration: BoxDecoration(
               gradient: LinearGradient(
