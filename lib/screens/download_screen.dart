@@ -116,7 +116,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     });
 
     try {
-      final filePath = await _downloadManager.startDownload(
+      final result = await _downloadManager.startDownload(
         url: url,
         quality: quality,
       );
@@ -125,13 +125,17 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
       final platform = _videoExtractor.detectPlatform(url);
       final platformLabel = platform.toString().split('.').last;
       final thumbnailUrl = _getThumbnailUrl(url, platform);
+      final title = (result.title?.isNotEmpty ?? false) ? result.title! : url;
+      final isImage = result.isImage;
       // 履歴に追加
       _downloadHistory.insert(0, {
         'url': url,
+        'title': title,
         'quality': quality == DownloadQuality.high ? 'HD' : 'SD',
         'date': DateTime.now(),
         'platform': platformLabel,
         'thumbnailUrl': thumbnailUrl,
+        'type': isImage ? 'image' : 'video',
       });
       _completeAnimController.forward(from: 0.0);
 
@@ -917,7 +921,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                           final date = item['date'] as DateTime;
                           final timeAgo = _getTimeAgo(date);
                           final thumbnailUrl = item['thumbnailUrl'] as String?;
-                          final title = (item['url'] as String?) ?? 'Video';
+                          final type = (item['type'] as String?) ?? 'video';
+                          final isImage = type == 'image';
+                          final title =
+                              (item['title'] as String?)?.trim().isNotEmpty == true
+                                  ? (item['title'] as String)
+                                  : (item['url'] as String?) ?? 'Video';
 
                           return Container(
                             margin: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -945,9 +954,9 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                           height: 60,
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) =>
-                                              _buildThumbnailPlaceholder(),
+                                              _buildThumbnailPlaceholder(isImage),
                                         )
-                                      : _buildThumbnailPlaceholder(),
+                                      : _buildThumbnailPlaceholder(isImage),
                                 ),
                                 SizedBox(width: 16),
                                 Expanded(
@@ -967,6 +976,12 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                                       SizedBox(height: 8),
                                       Row(
                                         children: [
+                                          Icon(
+                                            _getMediaTypeIcon(type),
+                                            size: 16,
+                                            color: Colors.grey[600],
+                                          ),
+                                          SizedBox(width: 6),
                                           Icon(
                                             _getPlatformIcon(item['platform']),
                                             size: 16,
@@ -1123,13 +1138,13 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     );
   }
 
-  Widget _buildThumbnailPlaceholder() {
+  Widget _buildThumbnailPlaceholder(bool isImage) {
     return Container(
       width: 60,
       height: 60,
       color: Colors.grey.withOpacity(0.3),
       child: Icon(
-        Icons.video_library,
+        isImage ? Icons.image : Icons.play_circle_fill,
         color: Colors.white54,
       ),
     );
@@ -1183,6 +1198,13 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
     if (difference.inHours < 24) return '${difference.inHours}h ago';
     if (difference.inDays < 7) return '${difference.inDays}d ago';
     return '${date.month}/${date.day}/${date.year}';
+  }
+
+  IconData _getMediaTypeIcon(String? type) {
+    if (type == 'image') {
+      return Icons.image;
+    }
+    return Icons.play_circle_fill;
   }
 
   IconData _getPlatformIcon(String platform) {

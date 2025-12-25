@@ -11,6 +11,18 @@ class DownloadProgress {
   final String message;
 }
 
+class DownloadResult {
+  DownloadResult({
+    required this.filePath,
+    required this.isImage,
+    this.title,
+  });
+
+  final String filePath;
+  final bool isImage;
+  final String? title;
+}
+
 enum DownloadQuality {
   low, // 無料・広告あり
   high, // サブスク・チケット
@@ -50,7 +62,7 @@ class DownloadManager {
     }
   }
 
-  Future<String> startDownload({
+  Future<DownloadResult> startDownload({
     required String url,
     required DownloadQuality quality,
   }) async {
@@ -61,12 +73,23 @@ class DownloadManager {
       throw Exception('ダウンロードフォルダが見つかりません');
     }
 
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final outputPath = '${downloadsDir.path}\\video_$timestamp.mp4';
+    final isInstagram = _isInstagramUrl(url);
+    _MediaInfo? mediaInfo;
+    if (isInstagram) {
+      mediaInfo = await _fetchMediaInfo(url);
+    }
 
-    final qualityFlag = quality == DownloadQuality.high
-        ? 'bestvideo+bestaudio/best' // 元動画と同じ最高画質
-        : 'worst[height<=480]/worst'; // 480p以下（全プラットフォーム対応）
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final outputTemplate =
+        '${downloadsDir.path}${Platform.pathSeparator}media_$timestamp.%(ext)s';
+    final expectedExtension = mediaInfo?.extension ??
+        (mediaInfo?.isImage == true ? 'jpg' : 'mp4');
+
+    final qualityFlag = isInstagram
+        ? (quality == DownloadQuality.high ? 'best' : 'worst')
+        : quality == DownloadQuality.high
+            ? 'bestvideo+bestaudio/best' // 元動画と同じ最高画質
+            : 'worst[height<=480]/worst'; // 480p以下（全プラットフォーム対応）
 
     _progressController.add(DownloadProgress(
       progress: 0.0,
@@ -83,7 +106,7 @@ class DownloadManager {
           '-f',
           qualityFlag,
           '-o',
-          outputPath,
+          outputTemplate,
           url,
         ],
       );
@@ -130,7 +153,13 @@ class DownloadManager {
         message: 'ダウンロード完了',
       ));
 
-      return outputPath;
+      final outputPath =
+          '${downloadsDir.path}${Platform.pathSeparator}media_$timestamp.$expectedExtension';
+      return DownloadResult(
+        filePath: outputPath,
+        isImage: mediaInfo?.isImage ?? false,
+        title: mediaInfo?.title,
+      );
     } catch (e) {
       _progressController.add(DownloadProgress(
         progress: 0.0,
@@ -143,4 +172,67 @@ class DownloadManager {
   void dispose() {
     _progressController.close();
   }
+
+  bool _isInstagramUrl(String url) {
+    return url.contains('instagram.com/');
+  }
+
+  Future<_MediaInfo> _fetchMediaInfo(String url) async {
+    try {
+      final processResult = await Process.run(
+        _ytdlpPath!,
+        [
+          '-J',
+          url,
+        ],
+      );
+
+      if (processResult.exitCode != 0) {
+        throw Exception(processResult.stderr.toString());
+      }
+
+      final decoded = jsonDecode(processResult.stdout.toString());
+      Map<String, dynamic>? info;
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['entries'] is List && (decoded['entries'] as List).isNotEmpty) {
+          final firstEntry = (decoded['entries'] as List).first;
+          if (firstEntry is Map<String, dynamic>) {
+            info = firstEntry;
+          }
+        } else {
+          info = decoded;
+        }
+      }
+
+      if (info == null) {
+        throw Exception('メタデータの取得に失敗しました');
+      }
+
+      final extension = (info['ext'] as String?)?.toLowerCase();
+      final title = info['title']?.toString();
+      final isImage = extension != null && _imageExtensions.contains(extension);
+
+      return _MediaInfo(
+        extension: extension,
+        title: title,
+        isImage: isImage,
+      );
+    } catch (e) {
+      throw Exception('メタデータの取得に失敗しました: $e');
+    }
+  }
 }
+
+class _MediaInfo {
+  _MediaInfo({
+    required this.extension,
+    required this.title,
+    required this.isImage,
+  });
+
+  final String? extension;
+  final String? title;
+  final bool isImage;
+}
+
+const _imageExtensions = {'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'};

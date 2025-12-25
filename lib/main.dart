@@ -78,13 +78,13 @@ class _TestScreenState extends State<TestScreen> {
     });
 
     try {
-      final filePath = await _downloadManager.startDownload(
+      final result = await _downloadManager.startDownload(
         url: url,
         quality: quality,
       );
       
       setState(() {
-        _status = '完了: $filePath';
+        _status = '完了: ${result.filePath}';
         _isDownloading = false;
       });
     } catch (e) {
