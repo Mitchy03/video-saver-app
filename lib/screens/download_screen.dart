@@ -235,6 +235,7 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // 背景グラデーション（_buildMainScreen から色をコピー）
@@ -678,20 +679,27 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Downloader Youtube X Instagram',
-                  style: const TextStyle(
-                    fontFamily: 'Lucida Handwriting',
-                    fontFamilyFallback: [
-                      'Segoe Script',
-                      'Brush Script MT',
-                      'Comic Sans MS',
-                    ],
-                    fontSize: 26,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
+                child: Row(
+                  children: [
+                    Text(
+                      'Downloader',
+                      style: GoogleFonts.pacifico(
+                        fontSize: 28,
+                        color: Colors.white,
+                      ),
+                    ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
+                    const SizedBox(width: 14),
+                    Row(
+                      children: const [
+                        FaIcon(FontAwesomeIcons.instagram, color: Colors.white, size: 20),
+                        SizedBox(width: 10),
+                        FaIcon(FontAwesomeIcons.youtube, color: Colors.white, size: 20),
+                        SizedBox(width: 10),
+                        FaIcon(FontAwesomeIcons.xTwitter, color: Colors.white, size: 20),
+                      ],
+                    ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1, end: 0),
+                  ],
+                ),
               ),
               Icon(Icons.notifications_outlined, color: Colors.white, size: 28)
                   .animate().fadeIn(delay: 200.ms).scale(begin: Offset(0.5, 0.5)),
