@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/services.dart';
+
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class DownloadProgress {
@@ -17,126 +18,85 @@ enum DownloadQuality {
 }
 
 class DownloadManager {
-  static const String ytdlpAsset = 'assets/yt-dlp.exe';
-  static const String ffmpegAsset = 'assets/ffmpeg.exe';
-  String? _ytdlpPath;
-  String? _ffmpegPath;
+  static const String _apiUrl = 'https://video-saver-api.onrender.com/get-video-url';
   final _progressController = StreamController<DownloadProgress>.broadcast();
 
   Stream<DownloadProgress> get progressStream => _progressController.stream;
-
-  Future<void> initialize() async {
-    if (_ytdlpPath != null) return;
-
-    final tempDir = await getTemporaryDirectory();
-    _ytdlpPath = '${tempDir.path}\\yt-dlp.exe';
-
-    final file = File(_ytdlpPath!);
-    if (!await file.exists()) {
-      try {
-        final data = await rootBundle.load(ytdlpAsset);
-        await file.writeAsBytes(data.buffer.asUint8List());
-      } catch (e) {
-        throw Exception('yt-dlp.exe の読み込みに失敗: $e');
-      }
-    }
-
-    // ffmpeg展開
-    _ffmpegPath = '${tempDir.path}\\ffmpeg.exe';
-    final ffmpegFile = File(_ffmpegPath!);
-    if (!await ffmpegFile.exists()) {
-      final ffmpegData = await rootBundle.load(ffmpegAsset);
-      await ffmpegFile.writeAsBytes(ffmpegData.buffer.asUint8List());
-    }
-  }
 
   Future<String> startDownload({
     required String url,
     required DownloadQuality quality,
   }) async {
-    await initialize();
-
-    final downloadsDir = await getDownloadsDirectory();
-    if (downloadsDir == null) {
-      throw Exception('ダウンロードフォルダが見つかりません');
-    }
-
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final outputPath = '${downloadsDir.path}\\video_$timestamp.mp4';
-
-    final qualityFlag = quality == DownloadQuality.high
-        ? 'bestvideo+bestaudio/best' // 元動画と同じ最高画質
-        : 'worst[height<=480]/worst'; // 480p以下（全プラットフォーム対応）
-
-    _progressController.add(DownloadProgress(
-      progress: 0.0,
-      message: 'ダウンロード開始...',
-    ));
-
     try {
-      final process = await Process.start(
-        _ytdlpPath!,
-        [
-          '--newline',
-          '--ffmpeg-location',
-          _ffmpegPath!,
-          '-f',
-          qualityFlag,
-          '-o',
-          outputPath,
-          url,
-        ],
+      _progressController.add(DownloadProgress(
+        progress: 0.0,
+        message: 'ダウンロード準備中...',
+      ));
+
+      final response = await http.post(
+        Uri.parse(_apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'url': url,
+          'quality': quality == DownloadQuality.high ? 'high' : 'low',
+        }),
       );
 
-      final stdoutSubscription = process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-        final match = RegExp(r'(\d+\.?\d*)%').firstMatch(line);
-        if (match != null) {
-          final percent = double.tryParse(match.group(1)!);
-          if (percent != null) {
-            _progressController.add(
-              DownloadProgress(
-                progress: percent / 100,
-                message: line.trim(),
-              ),
-            );
-          }
-        }
-      });
-
-      final stderrSubscription = process.stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) {
-        // エラーメッセージがあれば進捗に流す
-        _progressController.add(
-          DownloadProgress(progress: 0.0, message: line.trim()),
-        );
-      });
-
-      final exitCode = await process.exitCode;
-
-      await stdoutSubscription.cancel();
-      await stderrSubscription.cancel();
-
-      if (exitCode != 0) {
-        throw Exception('yt-dlp exited with code $exitCode');
+      if (response.statusCode != 200) {
+        throw Exception('API error: ${response.statusCode}');
       }
+
+      final data = jsonDecode(response.body);
+
+      if (data is! Map<String, dynamic>) {
+        throw Exception('不正なレスポンス形式です');
+      }
+
+      if (data['error'] != null) {
+        throw Exception(data['error']);
+      }
+
+      final videoUrl = data['video_url'] as String?;
+      final title = data['title'] as String? ?? 'video';
+      final ext = data['ext'] as String? ?? 'mp4';
+
+      if (videoUrl == null || videoUrl.isEmpty) {
+        throw Exception('動画URLの取得に失敗しました');
+      }
+
+      _progressController.add(DownloadProgress(
+        progress: 0.3,
+        message: 'ダウンロード中...',
+      ));
+
+      final videoResponse = await http.get(Uri.parse(videoUrl));
+
+      if (videoResponse.statusCode != 200) {
+        throw Exception('動画の取得に失敗しました (${videoResponse.statusCode})');
+      }
+
+      _progressController.add(DownloadProgress(
+        progress: 0.8,
+        message: '保存中...',
+      ));
+
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/$title.$ext';
+      final file = File(filePath);
+      await file.writeAsBytes(videoResponse.bodyBytes);
 
       _progressController.add(DownloadProgress(
         progress: 1.0,
         message: 'ダウンロード完了',
       ));
 
-      return outputPath;
+      return filePath;
     } catch (e) {
       _progressController.add(DownloadProgress(
         progress: 0.0,
         message: 'エラー: $e',
       ));
-      throw Exception('ダウンロード失敗: $e');
+      rethrow;
     }
   }
 
