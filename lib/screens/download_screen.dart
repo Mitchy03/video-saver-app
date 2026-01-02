@@ -684,7 +684,8 @@ class _ModernDownloadScreenState extends State<ModernDownloadScreen>
                     Text(
                       'Downloader',
                       style: GoogleFonts.pacifico(
-                        fontSize: 28,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0),
